@@ -40,7 +40,7 @@ afterEvaluate {
                 from components.release
                 groupId = "com.github.ayantech"
                 artifactId = "AyanAdManager"
-                version = "1.0.1"
+                version = "1.0.3"
             }
         }
     }
@@ -55,7 +55,7 @@ dependencies {
     androidTestImplementation libs.androidx.junit
     androidTestImplementation libs.androidx.espresso.core
 
-    implementation(libs.ayanads)
+    implementation(libs.hamrahAds)
     implementation(libs.ayanNetworking)
     implementation(libs.ayanNetworkGenerator)
 

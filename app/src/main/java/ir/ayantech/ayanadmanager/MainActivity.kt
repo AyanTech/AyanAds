@@ -12,10 +12,7 @@ import ir.ayantech.ayanadmanager.networks.hamrahAds.components.NativeAdAttribute
 import ir.ayantech.ayanadmanager.utils.constant.AppMarket
 
 class MainActivity : AppCompatActivity() {
-    val apiKey = "7b4b488a40a0c1dfe0ff73688766d79cab88274d21b16ff3f3af7157fabc692c"
-    val appKey = "590608eaa7f9d7352e97c35a398bd9cda4c5aa5df8b9796fe8cb483a977d29a7"
-    val interId = "20521bed-d9dc-4198-bc22-b026b6e696d3"
-    val nativeId = "00ea8b15-eb29-40f9-80ab-3bd92a631a89"
+    val appKey = "c89ce51c1c6686ac560580b28aba0642b6fc639fa93d7543bf0833c5ca9c965c"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,11 +24,13 @@ class MainActivity : AppCompatActivity() {
             appMarket = AppMarket.CafeBazaar
         )
 
+
         findViewById<Button>(R.id.ad1).setOnClickListener {
+
             AyanAdManager.showAd(
-                containerKey = "bu74f563nhl35f45",
+                containerKey = "6ec7f088-4800-4fda-ac03-b7ec88e9a829",
                 context = this,
-                adContainerId = findViewById(R.id.banner),
+                adContainerId = findViewById(R.id.nativeView),
                 adSize = null,
             )
         }
