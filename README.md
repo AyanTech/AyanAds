@@ -49,10 +49,10 @@ To display an ad, use the following example:
 ```
 AyanAdManager.showAd(
     useDefaultNativeAdView = true,
-    containerKey = "BANNER_CONTAINER_KEY",
+    containerKey = "CONTAINER_KEY",
     context = this,
     adSize = BannerAdSize.BANNER_320x50, // Required for banner ad, has own default value (optional)
-    adContainerId = findViewById(R.id.ad_container)
+    adContainerId = findViewById(R.id.view)
 )
 ```
 
@@ -65,9 +65,9 @@ When displaying native ads, you can configure the behavior based on whether you 
    ```kotlin
    AyanAdManager.showAd(
        useDefaultNativeAdView = true,
-       containerKey = "NATIVE_CONTAINER_KEY",
+       containerKey = "CONTAINER_KEY",
        context = this,
-       adContainerId = findViewById(R.id.native_ad_container)
+       adContainerId = findViewById(R.id.view)
    )
    ```
 
@@ -77,9 +77,9 @@ When displaying native ads, you can configure the behavior based on whether you 
    ```kotlin
    AyanAdManager.showAd(
        useDefaultNativeAdView = true,
-       containerKey = "NATIVE_CONTAINER_KEY",
+       containerKey = "CONTAINER_KEY",
        context = this,
-       adContainerId = findViewById(R.id.native_ad_container),
+       adContainerId = findViewById(R.id.view),
        nativeAdAttributes = NativeAdAttributes(
            titleColor = ContextCompat.getColor(this, R.color.black),
            buttonTextColor = Color.parseColor("#000000"),
@@ -95,9 +95,9 @@ When displaying native ads, you can configure the behavior based on whether you 
    ```kotlin
    AyanAdManager.showAd(
        useDefaultNativeAdView = false,
-       containerKey = "NATIVE_CONTAINER_KEY",
+       containerKey = "CONTAINER_KEY",
        context = this,
-       adContainerId = findViewById(R.id.native_ad_container)
+       adContainerId = findViewById(R.id.view)
    )
    ```
 
