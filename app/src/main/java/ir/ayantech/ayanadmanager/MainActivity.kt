@@ -23,7 +23,6 @@ class MainActivity : AppCompatActivity() {
 
         AyanAdManager.initialize(
             context = this,
-            apiKey = apiKey,
             appKey = appKey,
             appMarket = AppMarket.CafeBazaar
         )

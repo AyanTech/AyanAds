@@ -2,16 +2,17 @@ package ir.ayantech.ayanadmanager.core
 
 import android.content.Context
 import android.view.ViewGroup
+import ir.ayantech.ayanadmanager.core.AyanAdManager.adUnits
 import ir.ayantech.ayanadmanager.model.api.AdUnit
 import ir.ayantech.ayanadmanager.networks.hamrahAds.components.NativeAdAttributes
 import ir.ayantech.ayanadmanager.utils.BannerAdSize
 import ir.ayantech.ayanadmanager.utils.Logger
+import ir.ayantech.ayanadmanager.utils.SimpleCallBack
+import ir.ayantech.ayanadmanager.utils.StringCallBack
 import ir.ayantech.ayanadmanager.utils.constant.AdSource
 import ir.ayantech.ayanadmanager.utils.constant.AppMarket
 import ir.ayantech.ayanadmanager.utils.constant.Config
 import ir.ayantech.ayanadmanager.utils.constant.Config.Timeout
-import ir.ayantech.ayanadmanager.utils.simpleCallBack
-import ir.ayantech.ayanadmanager.utils.stringCallBack
 import ir.ayantech.ayannetworking.BuildConfig
 import ir.ayantech.ayannetworking.api.AyanApi
 import ir.ayantech.ayannetworking.ayanModel.LogLevel
@@ -27,16 +28,17 @@ object AyanAdManager {
     var clickTracker = ""
     var appKey = ""
     val adUnits = arrayListOf<AdUnit>()
-    val adProvidersPriority = arrayListOf<AdSource>()
+
+    // Pair(AdSource,AppID)
+    val adProvidersPriority = arrayListOf<Pair<AdSource, String?>>()
     lateinit var appMarket: AppMarket
 
     fun initialize(
         context: Context,
-        apiKey: String,
         appKey: String,
         appMarket: AppMarket,
-        onSuccess: simpleCallBack = { Logger.d("Initialization successful.") },
-        onError: stringCallBack = { Logger.e(it) }
+        onSuccess: SimpleCallBack = { Logger.d("Initialization successful.") },
+        onError: StringCallBack = { Logger.e(it) }
     ) {
         AyanAdManager.appKey = appKey
         AyanAdManager.appMarket = appMarket
@@ -51,15 +53,42 @@ object AyanAdManager {
         }
 
         createAyanAdApi(context)
-        getConfig(appKey = appKey)
-        initializeHamrahAds(context, apiKey, onSuccess, onError)
+
+        getConfig(appKey = appKey) { response ->
+
+            response?.let {
+                it.AdSourcePriority.map { Pair(it.AdSource, it.AppId) }
+                    .let { adProvidersPriority.addAll(it) }
+                adManager = AdProviderManager()
+                adUnits.addAll(it.AdUnits)
+            }
+
+            adProvidersPriority.forEach {
+                when (it.first) {
+                    AdSource.HamrahAd -> {
+                        if (it.second.isNullOrEmpty().not()) {
+                            initializeHamrahAds(context, it.second!!, onSuccess, onError)
+                        } else {
+                            isInitialized = false
+                            Logger.e("HamrahAd is not initialize, appID is not valid.")
+                            return@getConfig
+                        }
+                    }
+
+                    AdSource.Adivery -> {}
+                    AdSource.AdMob -> {}
+                    AdSource.Tapsell -> {}
+                }
+            }
+        }
+
         isInitialized = true
     }
 
     private fun createAyanAdApi(context: Context) {
         ayanAdApi = AyanApi(
             context = context,
-            defaultBaseUrl = Config.AdSdkBaseUrl,
+            defaultBaseUrl = Config.AyanAdBaseUrl,
             timeout = Timeout.toLong(),
             headers = hashMapOf("Accept-Language" to "fa"),
             logLevel = if (BuildConfig.DEBUG) LogLevel.LOG_ALL else LogLevel.DO_NOT_LOG
@@ -69,8 +98,8 @@ object AyanAdManager {
     private fun initializeHamrahAds(
         context: Context,
         apiKey: String,
-        onSuccess: simpleCallBack,
-        onError: stringCallBack
+        onSuccess: SimpleCallBack,
+        onError: StringCallBack
     ) {
         HamrahAds.Initializer()
             .setContext(context)
@@ -108,7 +137,7 @@ object AyanAdManager {
         }
 
         adUnits.filter { it.ContainerKey == containerKey }
-            .sortedByPriority(adProvidersPriority)
+            .sortedByPriority(adProvidersPriority.map { it.first })
             ?.let { filteredAdUnits ->
                 adManager.loadAndShowAd(
                     containerKey = containerKey,

@@ -1,4 +1,4 @@
 package ir.ayantech.ayanadmanager.utils
 
-typealias simpleCallBack = () -> Unit
-typealias stringCallBack = (String) -> Unit
+typealias SimpleCallBack = () -> Unit
+typealias StringCallBack = (String) -> Unit

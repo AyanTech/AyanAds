@@ -1,7 +1,5 @@
 package ir.ayantech.ayanadmanager.core
 
-import ir.ayantech.ayanadmanager.core.AyanAdManager.adManager
-import ir.ayantech.ayanadmanager.core.AyanAdManager.adUnits
 import ir.ayantech.ayanadmanager.core.AyanAdManager.appKey
 import ir.ayantech.ayanadmanager.core.AyanAdManager.ayanAdApi
 import ir.ayantech.ayanadmanager.core.AyanAdManager.clickTracker
@@ -16,16 +14,13 @@ import ir.ayantech.ayanadmanager.utils.constant.Config.AppKeyHeader
 import ir.ayantech.ayanadmanager.utils.constant.EndPoint
 
 
-fun getConfig(appKey: String) {
+fun getConfig(appKey: String, success: (GetConfigOutputParameters?) -> Unit) {
     ayanAdApi.call<GetConfigOutputParameters>(
         endPoint = EndPoint.getConfigs,
         input = GetConfigInputParameters(appKey),
     ) {
         success { res ->
-            res?.AdSourcePriority?.map { it.AdSource }
-                ?.let { AyanAdManager.adProvidersPriority.addAll(it) }
-            adManager = AdProviderManager()
-            res?.AdUnits?.let { adUnitList -> adUnits.addAll(adUnitList) }
+            success.invoke(res)
         }
         failure {
             Logger.e("getConfig: ${it.failureMessage}")

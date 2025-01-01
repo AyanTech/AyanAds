@@ -14,7 +14,7 @@ data class GetConfigOutputParameters(
 
 data class AdSourcePriority(
     val AdSource: AdSource,
-    val AppId: String,
+    val AppId: String?,
     val SharePercent: Long,
 )
 
