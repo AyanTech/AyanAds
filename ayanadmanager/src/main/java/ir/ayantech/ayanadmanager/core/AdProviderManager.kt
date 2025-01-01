@@ -1,8 +1,8 @@
-package com.ayanco.ayanads.core
+package ir.ayantech.ayanadmanager.core
 
 import android.content.Context
 import android.view.ViewGroup
-import com.ayanco.ayanads.core.AyanAdManager.appMarket
+import ir.ayantech.ayanadmanager.core.AyanAdManager.appMarket
 import ir.ayantech.ayanadmanager.model.api.AdUnit
 import ir.ayantech.ayanadmanager.model.api.AddStatisticsInputParameters
 import ir.ayantech.ayanadmanager.networks.adivery.AdiveryProvider

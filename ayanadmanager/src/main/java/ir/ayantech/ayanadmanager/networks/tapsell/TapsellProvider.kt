@@ -2,11 +2,11 @@ package ir.ayantech.ayanadmanager.networks.tapsell
 
 import android.content.Context
 import android.view.ViewGroup
-import com.ayanco.ayanads.core.AdCallback
-import com.ayanco.ayanads.core.AdProvider
-import ir.ayantech.ayanadmanager.utils.ContainerType
+import ir.ayantech.ayanadmanager.core.AdCallback
+import ir.ayantech.ayanadmanager.core.AdProvider
 import ir.ayantech.ayanadmanager.model.api.AddStatisticsInputParameters
 import ir.ayantech.ayanadmanager.networks.hamrahAds.components.NativeAdAttributes
+import ir.ayantech.ayanadmanager.utils.ContainerType
 import ir.ayantech.hamrahads.domain.enums.HamrahAdsBannerType
 
 class TapsellProvider : AdProvider {

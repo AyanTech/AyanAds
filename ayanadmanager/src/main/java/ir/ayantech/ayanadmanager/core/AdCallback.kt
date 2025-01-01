@@ -1,4 +1,4 @@
-package com.ayanco.ayanads.core
+package ir.ayantech.ayanadmanager.core
 
 
 interface AdCallback {

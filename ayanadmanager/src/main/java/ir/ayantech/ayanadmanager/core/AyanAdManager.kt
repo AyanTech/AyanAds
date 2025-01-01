@@ -1,4 +1,4 @@
-package com.ayanco.ayanads.core
+package ir.ayantech.ayanadmanager.core
 
 import android.content.Context
 import android.view.ViewGroup
@@ -38,8 +38,8 @@ object AyanAdManager {
         onSuccess: simpleCallBack = { Logger.d("Initialization successful.") },
         onError: stringCallBack = { Logger.e(it) }
     ) {
-        this.appKey = appKey
-        this.appMarket = appMarket
+        AyanAdManager.appKey = appKey
+        AyanAdManager.appMarket = appMarket
 
         if (!BuildConfig.DEBUG) {
             Logger.setDebugMode(false)
@@ -95,7 +95,7 @@ object AyanAdManager {
         containerKey: String,
         context: Context,
         adSize: BannerAdSize?,
-        bannerAdContainer: ViewGroup?,
+        adContainerId: ViewGroup?,
         nativeAdAttributes: NativeAdAttributes = NativeAdAttributes(),
         useDefaultNativeAdView: Boolean = true,
     ) {
@@ -115,7 +115,7 @@ object AyanAdManager {
                     adUnits = filteredAdUnits,
                     callback = createAdCallBack(),
                     context = context,
-                    viewGroup = bannerAdContainer,
+                    viewGroup = adContainerId,
                     nativeAdAttributes = nativeAdAttributes,
                     useDefaultNativeAdView = useDefaultNativeAdView,
                     adSize = convertedAdSize

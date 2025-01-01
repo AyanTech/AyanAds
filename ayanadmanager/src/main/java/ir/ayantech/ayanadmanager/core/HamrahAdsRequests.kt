@@ -1,10 +1,10 @@
-package com.ayanco.ayanads.core
+package ir.ayantech.ayanadmanager.core
 
-import com.ayanco.ayanads.core.AyanAdManager.adManager
-import com.ayanco.ayanads.core.AyanAdManager.adUnits
-import com.ayanco.ayanads.core.AyanAdManager.appKey
-import com.ayanco.ayanads.core.AyanAdManager.ayanAdApi
-import com.ayanco.ayanads.core.AyanAdManager.clickTracker
+import ir.ayantech.ayanadmanager.core.AyanAdManager.adManager
+import ir.ayantech.ayanadmanager.core.AyanAdManager.adUnits
+import ir.ayantech.ayanadmanager.core.AyanAdManager.appKey
+import ir.ayantech.ayanadmanager.core.AyanAdManager.ayanAdApi
+import ir.ayantech.ayanadmanager.core.AyanAdManager.clickTracker
 import ir.ayantech.ayanadmanager.model.api.AddStatisticsInputParameters
 import ir.ayantech.ayanadmanager.model.api.AddStatisticsOutPutParameters
 import ir.ayantech.ayanadmanager.model.api.GetConfigInputParameters

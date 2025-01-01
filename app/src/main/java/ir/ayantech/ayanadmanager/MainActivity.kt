@@ -6,7 +6,7 @@ import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
-import com.ayanco.ayanads.core.AyanAdManager
+import ir.ayantech.ayanadmanager.core.AyanAdManager
 import ir.ayantech.ayanadmanager.networks.hamrahAds.HamrahAdProvider
 import ir.ayantech.ayanadmanager.networks.hamrahAds.components.NativeAdAttributes
 import ir.ayantech.ayanadmanager.utils.constant.AppMarket
@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity() {
             AyanAdManager.showAd(
                 containerKey = "bu74f563nhl35f45",
                 context = this,
-                bannerAdContainer = findViewById(R.id.banner),
+                adContainerId = findViewById(R.id.banner),
                 adSize = null,
             )
         }
@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity() {
             AyanAdManager.showAd(
                 containerKey = "fh652bn7u56nb",
                 context = this,
-                bannerAdContainer = findViewById(R.id.banner),
+                adContainerId = findViewById(R.id.banner),
                 adSize = null,
             )
         }
@@ -49,7 +49,7 @@ class MainActivity : AppCompatActivity() {
                 useDefaultNativeAdView = true,
                 containerKey = "29a6cefce668",
                 context = this,
-                bannerAdContainer = findViewById(R.id.banner),
+                adContainerId = findViewById(R.id.banner),
                 adSize = null,
                 nativeAdAttributes = NativeAdAttributes(
                     titleColor = ContextCompat.getColor(
