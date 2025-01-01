@@ -52,7 +52,7 @@ AyanAdManager.showAd(
     containerKey = "BANNER_CONTAINER_KEY",
     context = this,
     adSize = BannerAdSize.BANNER_320x50, // Required for banner ad, has own default value (optional)
-    bannerAdContainer = findViewById(R.id.ad_container)
+    adContainerId = findViewById(R.id.ad_container)
 )
 ```
 
@@ -67,7 +67,7 @@ When displaying native ads, you can configure the behavior based on whether you 
        useDefaultNativeAdView = true,
        containerKey = "NATIVE_CONTAINER_KEY",
        context = this,
-       bannerAdContainer = findViewById(R.id.native_ad_container)
+       adContainerId = findViewById(R.id.native_ad_container)
    )
    ```
 
@@ -79,7 +79,7 @@ When displaying native ads, you can configure the behavior based on whether you 
        useDefaultNativeAdView = true,
        containerKey = "NATIVE_CONTAINER_KEY",
        context = this,
-       bannerAdContainer = findViewById(R.id.native_ad_container),
+       adContainerId = findViewById(R.id.native_ad_container),
        nativeAdAttributes = NativeAdAttributes(
            titleColor = ContextCompat.getColor(this, R.color.black),
            buttonTextColor = Color.parseColor("#000000"),
@@ -97,7 +97,7 @@ When displaying native ads, you can configure the behavior based on whether you 
        useDefaultNativeAdView = false,
        containerKey = "NATIVE_CONTAINER_KEY",
        context = this,
-       bannerAdContainer = findViewById(R.id.native_ad_container)
+       adContainerId = findViewById(R.id.native_ad_container)
    )
    ```
 
