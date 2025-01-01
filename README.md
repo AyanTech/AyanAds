@@ -36,7 +36,7 @@ class MyApp : Application() {
         AyanAdManager.initialize(
             context = this,
             appMarket = "YOUR_APP_MARKET",
-            apiKey = "YOUR_API_KEY",
+            appKey = "YOUR_APP_KEY",
             onSuccess = { Logger.d("AyanAdManager initialized successfully.") },
             onError = { Logger.e("Failed to initialize AyanAdManager: $it") }
         )
