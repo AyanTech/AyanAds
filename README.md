@@ -33,13 +33,13 @@ class MyApp : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        AdManager.initialize(
+        AyanAdManager.initialize(
             context = this,
             appMarket = "YOUR_APP_MARKET",
             apiKey = "YOUR_API_KEY",
             appKey = "YOUR_APP_KEY",
-            onSuccess = { Logger.d("AdManager initialized successfully.") },
-            onError = { Logger.e("Failed to initialize AdManager: $it") }
+            onSuccess = { Logger.d("AyanAdManager initialized successfully.") },
+            onError = { Logger.e("Failed to initialize AyanAdManager: $it") }
         )
     }
 }
@@ -47,12 +47,12 @@ class MyApp : Application() {
 Step 2: Display an Ad
 To display an ad, use the following example:
 ```
-AdManager.showAd(
+AyanAdManager.showAd(
     useDefaultNativeAdView = true,
     containerKey = "BANNER_CONTAINER_KEY",
     context = this,
     adSize = BannerAdSize.BANNER_320x50, // Required for banner ad, has own default value (optional)
-    bannerAdContainer = findViewById(R.id.ad_container)
+    adContainerId = findViewById(R.id.ad_container)
 )
 ```
 
@@ -63,11 +63,11 @@ When displaying native ads, you can configure the behavior based on whether you 
    Set `useDefaultNativeAdView = true` to use the SDK's default view without customization.
 
    ```kotlin
-   AdManager.showAd(
+   AyanAdManager.showAd(
        useDefaultNativeAdView = true,
        containerKey = "NATIVE_CONTAINER_KEY",
        context = this,
-       bannerAdContainer = findViewById(R.id.native_ad_container)
+       adContainerId = findViewById(R.id.native_ad_container)
    )
    ```
 
@@ -75,11 +75,11 @@ When displaying native ads, you can configure the behavior based on whether you 
    Set `useDefaultNativeAdView = true` and provide a `nativeAdAttributes` object to customize the default view.
 
    ```kotlin
-   AdManager.showAd(
+   AyanAdManager.showAd(
        useDefaultNativeAdView = true,
        containerKey = "NATIVE_CONTAINER_KEY",
        context = this,
-       bannerAdContainer = findViewById(R.id.native_ad_container),
+       adContainerId = findViewById(R.id.native_ad_container),
        nativeAdAttributes = NativeAdAttributes(
            titleColor = ContextCompat.getColor(this, R.color.black),
            buttonTextColor = Color.parseColor("#000000"),
@@ -93,11 +93,11 @@ When displaying native ads, you can configure the behavior based on whether you 
    If you want to provide your own custom view for displaying native ads, set `useDefaultNativeAdView = false` and define your own layout.
 
    ```kotlin
-   AdManager.showAd(
+   AyanAdManager.showAd(
        useDefaultNativeAdView = false,
        containerKey = "NATIVE_CONTAINER_KEY",
        context = this,
-       bannerAdContainer = findViewById(R.id.native_ad_container)
+       adContainerId = findViewById(R.id.native_ad_container)
    )
    ```
 
