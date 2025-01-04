@@ -4,8 +4,7 @@
     android:id="@+id/nativeView"
     android:layout_width="match_parent"
     android:layout_height="64dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="4dp">
+    app:cardCornerRadius="8dp">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -49,6 +48,7 @@
                     android:focusableInTouchMode="true"
                     android:freezesText="true"
                     android:marqueeRepeatLimit="marquee_forever"
+                    android:paddingHorizontal="@dimen/_5sdp"
                     android:scrollHorizontally="true"
                     android:singleLine="true"
                     android:textSize="12sp"
@@ -64,6 +64,7 @@
                     android:focusableInTouchMode="true"
                     android:freezesText="true"
                     android:marqueeRepeatLimit="marquee_forever"
+                    android:paddingHorizontal="@dimen/_5sdp"
                     android:scrollHorizontally="true"
                     android:singleLine="true"
                     android:textSize="11sp" />

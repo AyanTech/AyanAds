@@ -11,7 +11,7 @@ activity = "1.9.3"
 constraintlayout = "2.2.0"
 ayanNetworking = "1.6.7"
 generator = "0.3.0"
-hamrahAds = "0.1.7"
+hamrahAds = "0.1.8"
 
 
 [libraries]
