@@ -2,6 +2,8 @@ package ir.ayantech.ayanadmanager.networks.hamrahAds
 
 import android.app.Activity
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
@@ -160,10 +162,13 @@ class HamrahAdProvider : AdProvider {
         context: Context,
         nativeAdAttributes: NativeAdAttributes
     ) {
-        val inflater = LayoutInflater.from(context)
-        val binding = NativeLayoutBinding.inflate(inflater)
-        binding.init(nativeAdAttributes)
-        viewGroup.addView(binding.root)
+
+        Handler(Looper.getMainLooper()).post {
+            val inflater = LayoutInflater.from(context)
+            val binding = NativeLayoutBinding.inflate(inflater)
+            binding.init(nativeAdAttributes)
+            viewGroup.addView(binding.root)
+        }
     }
 
     private fun createShowNativeAd(
