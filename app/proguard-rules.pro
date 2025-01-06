@@ -15,7 +15,19 @@
 # Uncomment this to preserve the line number information for
 # debugging stack traces.
 #-keepattributes SourceFile,LineNumberTable
+-keep class ir.ayantech.ayanadmanager.** { *; }
+-keep class ir.ayantech.ayanadmanager.model.api.** { *; }
+-keep class ir.ayantech.ayannetworking.** { *; }
 
+-keepattributes *Annotation*
+-keep class com.google.gson.** { *; }
+-keep class ir.ayantech.ayanadmanager.utils.constant.** { *; }
+-keep public class ir.ayantech.hamrahads.** { *; }
+
+-keep class com.google.gson.** { *; }
+-keepattributes Signature
+
+-keep public class * implements java.lang.reflect.Type
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile

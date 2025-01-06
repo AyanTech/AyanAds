@@ -3,6 +3,7 @@ package ir.ayantech.ayanadmanager.core
 import android.content.Context
 import android.view.ViewGroup
 import ir.ayantech.ayanadmanager.core.AyanAdManager.adUnits
+import ir.ayantech.ayanadmanager.model.api.AdProviderPriority
 import ir.ayantech.ayanadmanager.model.api.AdUnit
 import ir.ayantech.ayanadmanager.networks.hamrahAds.components.NativeAdAttributes
 import ir.ayantech.ayanadmanager.utils.BannerAdSize
@@ -29,8 +30,7 @@ object AyanAdManager {
     var appKey = ""
     val adUnits = arrayListOf<AdUnit>()
 
-    // Pair(AdSource,AppID)
-    val adProvidersPriority = arrayListOf<Pair<AdSource, String?>>()
+    val adProvidersPriority = arrayListOf<AdProviderPriority>()
     lateinit var appMarket: AppMarket
 
     fun initialize(
@@ -43,9 +43,9 @@ object AyanAdManager {
         AyanAdManager.appKey = appKey
         AyanAdManager.appMarket = appMarket
 
-        if (!BuildConfig.DEBUG) {
-            Logger.setDebugMode(false)
-        }
+//        if (!BuildConfig.DEBUG) {
+//            Logger.setDebugMode(false)
+//        }
 
         if (isInitialized) {
             Logger.w("SDK is already initialized.")
@@ -57,24 +57,23 @@ object AyanAdManager {
         getConfig(appKey = appKey) { response ->
 
             response?.let {
-                it.AdSourcePriority.map { Pair(it.AdSource, it.AppId) }
+                it.AdSourcePriority.map { AdProviderPriority(it.AdSource, it.AppId) }
                     .let { adProvidersPriority.addAll(it) }
                 adManager = AdProviderManager()
                 adUnits.addAll(it.AdUnits)
             }
 
             adProvidersPriority.forEach {
-                when (it.first) {
+                when (it.adSource) {
                     AdSource.HamrahAd -> {
-                        if (it.second.isNullOrEmpty().not()) {
-                            initializeHamrahAds(context, it.second!!, onSuccess, onError)
+                        if (it.priority.isNullOrEmpty().not()) {
+                            initializeHamrahAds(context, it.priority!!, onSuccess, onError)
                         } else {
                             isInitialized = false
                             Logger.e("HamrahAd is not initialize, appID is not valid.")
                             return@getConfig
                         }
                     }
-
                     AdSource.Adivery -> {}
                     AdSource.AdMob -> {}
                     AdSource.Tapsell -> {}
@@ -137,7 +136,7 @@ object AyanAdManager {
         }
 
         adUnits.filter { it.ContainerKey == containerKey }
-            .sortedByPriority(adProvidersPriority.map { it.first })
+            .sortedByPriority(adProvidersPriority.map { it.adSource })
             ?.let { filteredAdUnits ->
                 adManager.loadAndShowAd(
                     containerKey = containerKey,
