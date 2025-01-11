@@ -18,7 +18,7 @@ In the app-level build.gradle, add the dependency:
 
 ```
 dependencies {
-    implementation 'com...'
+    implementation 'com.github.AyanTech:AyanAds:Tag'
 }
 ```
 
