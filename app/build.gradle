@@ -7,6 +7,25 @@ android {
     namespace 'ir.ayantech.ayanadmanager'
     compileSdk 35
 
+    signingConfigs {
+        create("cafeRelease") {
+            storeFile =
+                    file("C:\\Users\\ayan\\AndroidStudioProjects\\piskhanWaterBill\\waterBillInquiry.jks")
+            storePassword = "ayantech"
+            keyAlias = "key0"
+            keyPassword = "Ayantech"
+        }
+
+        create("myketRelease") {
+            storeFile =
+                    file("C:\\Users\\ayan\\AndroidStudioProjects\\piskhanWaterBill\\waterBillInquiry.jks")
+            storePassword = "ayantech"
+            keyAlias = "key0"
+            keyPassword = "Ayantech"
+        }
+
+    }
+
     defaultConfig {
         applicationId "ir.ayantech.ayanadmanager"
         minSdk 21
@@ -19,7 +38,17 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            signingConfig = signingConfigs.getByName("cafeRelease")
+            minifyEnabled true
+            shrinkResources true
+            debuggable true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug{
+            signingConfig = signingConfigs.getByName("cafeRelease")
+            minifyEnabled true
+            shrinkResources true
+            debuggable true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
