@@ -100,4 +100,10 @@ When displaying native ads, you can configure the behavior based on whether you 
    )
    ```
 
----
+
+### ProGuard Configuration
+If you're using ProGuard, add the following rules to your ProGuard configuration file:
+
+```proguard
+-keep class ir.ayantech.ayanadmanager.model.api. { *; }
+-keep class ir.ayantech.ayanadmanager.utils.constant. { *; }
