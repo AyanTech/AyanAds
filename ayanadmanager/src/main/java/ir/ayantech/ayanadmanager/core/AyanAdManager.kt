@@ -2,7 +2,6 @@ package ir.ayantech.ayanadmanager.core
 
 import android.content.Context
 import android.view.ViewGroup
-import ir.ayantech.ayanadmanager.core.AyanAdManager.adUnits
 import ir.ayantech.ayanadmanager.model.api.AdProviderPriority
 import ir.ayantech.ayanadmanager.model.api.AdUnit
 import ir.ayantech.ayanadmanager.networks.hamrahAds.components.NativeAdAttributes
@@ -43,9 +42,9 @@ object AyanAdManager {
         AyanAdManager.appKey = appKey
         AyanAdManager.appMarket = appMarket
 
-//        if (!BuildConfig.DEBUG) {
-//            Logger.setDebugMode(false)
-//        }
+        if (BuildConfig.DEBUG.not()) {
+            Logger.setDebugMode(false)
+        }
 
         if (isInitialized) {
             Logger.w("SDK is already initialized.")
@@ -126,6 +125,7 @@ object AyanAdManager {
         adContainerId: ViewGroup?,
         nativeAdAttributes: NativeAdAttributes = NativeAdAttributes(),
         useDefaultNativeAdView: Boolean = true,
+        adCallback: AdCallback
     ) {
 
         val convertedAdSize: HamrahAdsBannerType? = when (adSize) {
@@ -141,7 +141,7 @@ object AyanAdManager {
                 adManager.loadAndShowAd(
                     containerKey = containerKey,
                     adUnits = filteredAdUnits,
-                    callback = createAdCallBack(),
+                    callback = createAdCallBack(adCallback),
                     context = context,
                     viewGroup = adContainerId,
                     nativeAdAttributes = nativeAdAttributes,
@@ -152,13 +152,19 @@ object AyanAdManager {
 
     }
 
-    private fun createAdCallBack() = object : AdCallback {
+    private fun createAdCallBack(adCallback: AdCallback) = object : AdCallback {
         override fun onAdLoaded() {
             Logger.d("Ad loaded successfully!")
+            adCallback.onAdLoaded()
+        }
+
+        override fun onAdClicked() {
+            adCallback.onAdClicked()
         }
 
         override fun onAdFailed(error: String) {
             Logger.e("Failed to load ad: $error")
+            adCallback.onAdFailed(error)
         }
     }
 

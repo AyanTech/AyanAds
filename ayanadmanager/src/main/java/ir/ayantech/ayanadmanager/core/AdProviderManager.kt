@@ -109,6 +109,10 @@ class AdProviderManager {
                         callback.onAdLoaded()
                     }
 
+                    override fun onAdClicked() {
+                        callback.onAdClicked()
+                    }
+
                     override fun onAdFailed(error: String) {
                         // Try the next provider if this one fails
                         tryNextProvider(

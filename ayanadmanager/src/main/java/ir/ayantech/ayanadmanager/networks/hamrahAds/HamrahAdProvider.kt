@@ -203,6 +203,7 @@ class HamrahAdProvider : AdProvider {
                 override fun onClick() {
                     super.onClick()
                     submitClick()
+                    callback.onAdClicked()
                 }
 
                 override fun onError(error: NetworkError) {
@@ -249,6 +250,7 @@ class HamrahAdProvider : AdProvider {
 
             override fun onClick() {
                 super.onClick()
+                callback.onAdClicked()
                 submitClick()
             }
 
