@@ -140,6 +140,7 @@ class AdmobProvider : AdProvider {
 
                 override fun onAdLoaded(interstitialAd: InterstitialAd) {
                     callback.onAdLoaded()
+                    sendStatistics(statistics)
                     mInterstitialAd = interstitialAd
                     mInterstitialAd?.fullScreenContentCallback =
                         object : FullScreenContentCallback() {
@@ -158,7 +159,6 @@ class AdmobProvider : AdProvider {
                 }
 
             })
-
     }
 
     private fun showNativeAd(
@@ -358,6 +358,7 @@ class AdmobProvider : AdProvider {
     }
 
     override fun destroy() {
-
+        currentNativeAd?.destroy()
+        mInterstitialAd = null
     }
 }
