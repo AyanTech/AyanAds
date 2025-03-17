@@ -189,7 +189,10 @@ class HamrahAdProvider : AdProvider {
             val inflater = LayoutInflater.from(activity)
             val binding = NativeLayoutBinding.inflate(inflater)
             binding.init(nativeAdAttributes)
-            viewGroup.addView(binding.root)
+            viewGroup.apply {
+                removeAllViews()
+                addView(binding.root, 0)
+            }
         }
     }
 
