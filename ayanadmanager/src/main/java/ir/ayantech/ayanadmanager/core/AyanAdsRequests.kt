@@ -20,6 +20,7 @@ fun getConfig(appKey: String, success: (GetConfigOutputParameters?) -> Unit) {
         input = GetConfigInputParameters(appKey),
     ) {
         success { res ->
+            Logger.d("getConfig: $res")
             success.invoke(res)
         }
         failure {
@@ -36,10 +37,11 @@ fun sendStatistics(input: AddStatisticsInputParameters) {
             input = input,
         ) {
             success {
+                Logger.d("sendStatistics: $it")
                 clickTracker = it?.ClickTracker ?: ""
             }
             failure {
-                Logger.e("addStatistics: ${it.failureMessage}")
+                Logger.e("sendStatistics: ${it.failureMessage}")
             }
         }
     }
@@ -52,6 +54,9 @@ fun submitClick() {
             endPoint = EndPoint.trackStatistics,
             input = TrackStatisticsInputParameters(clickTracker),
         ) {
+            success {
+                Logger.d("submitClick: $it")
+            }
             failure {
                 Logger.e("submitClick: ${it.failureMessage}")
             }
