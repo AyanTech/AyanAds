@@ -6,7 +6,7 @@ import com.google.android.gms.ads.MobileAds
 import ir.ayantech.ayanadmanager.model.api.AdProviderPriority
 import ir.ayantech.ayanadmanager.model.api.AdUnit
 import ir.ayantech.ayanadmanager.networks.hamrahAds.components.NativeAdAttributes
-import ir.ayantech.ayanadmanager.utils.BannerAdSize
+import ir.ayantech.ayanadmanager.utils.AdSizeType
 import ir.ayantech.ayanadmanager.utils.Logger
 import ir.ayantech.ayanadmanager.utils.SimpleCallBack
 import ir.ayantech.ayanadmanager.utils.StringCallBack
@@ -18,7 +18,6 @@ import ir.ayantech.ayannetworking.BuildConfig
 import ir.ayantech.ayannetworking.api.AyanApi
 import ir.ayantech.ayannetworking.ayanModel.LogLevel
 import ir.ayantech.hamrahads.HamrahAds
-import ir.ayantech.hamrahads.domain.enums.HamrahAdsBannerType
 import ir.ayantech.hamrahads.listener.HamrahAdsInitListener
 import ir.ayantech.hamrahads.network.model.NetworkError
 import kotlinx.coroutines.CoroutineScope
@@ -136,19 +135,12 @@ object AyanAdManager {
     fun showAd(
         containerKey: String,
         activity: Activity,
-        adSize: BannerAdSize?,
+        adSize: AdSizeType?,
         adContainerId: ViewGroup?,
         nativeAdAttributes: NativeAdAttributes = NativeAdAttributes(),
         useDefaultNativeAdView: Boolean = true,
         adCallback: AdCallback
     ) {
-
-        val convertedAdSize: HamrahAdsBannerType? = when (adSize) {
-            BannerAdSize.BANNER_320x50 -> HamrahAdsBannerType.BANNER_320x50
-            BannerAdSize.BANNER_640x1136 -> HamrahAdsBannerType.BANNER_640x1136
-            BannerAdSize.BANNER_1136x640 -> HamrahAdsBannerType.BANNER_1136x640
-            null -> null
-        }
 
         adUnits.filter { it.ContainerKey == containerKey }
             .sortedByPriority(adProvidersPriority.map { it.adSource })
@@ -161,7 +153,7 @@ object AyanAdManager {
                     viewGroup = adContainerId,
                     nativeAdAttributes = nativeAdAttributes,
                     useDefaultNativeAdView = useDefaultNativeAdView,
-                    adSize = convertedAdSize
+                    adSize = adSize
                 )
             } ?: Logger.w("No ad found for containerKey: $containerKey")
 

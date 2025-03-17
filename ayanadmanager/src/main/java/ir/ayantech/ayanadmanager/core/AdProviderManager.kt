@@ -9,13 +9,13 @@ import ir.ayantech.ayanadmanager.model.api.AddStatisticsInputParameters
 import ir.ayantech.ayanadmanager.networks.admob.AdmobProvider
 import ir.ayantech.ayanadmanager.networks.hamrahAds.HamrahAdProvider
 import ir.ayantech.ayanadmanager.networks.hamrahAds.components.NativeAdAttributes
+import ir.ayantech.ayanadmanager.utils.AdSizeType
 import ir.ayantech.ayanadmanager.utils.ContainerType
 import ir.ayantech.ayanadmanager.utils.Logger
 import ir.ayantech.ayanadmanager.utils.constant.AdSource
 import ir.ayantech.ayanadmanager.utils.constant.Config.Platform
 import ir.ayantech.ayanadmanager.utils.getAppVersion
 import ir.ayantech.ayanadmanager.utils.getOsVersion
-import ir.ayantech.hamrahads.domain.enums.HamrahAdsBannerType
 
 
 class AdProviderManager {
@@ -40,7 +40,7 @@ class AdProviderManager {
         viewGroup: ViewGroup? = null,
         nativeAdAttributes: NativeAdAttributes,
         useDefaultNativeAdView: Boolean,
-        adSize: HamrahAdsBannerType?
+        adSize: AdSizeType?
     ) {
         tryNextProvider(
             containerKey = containerKey,
@@ -69,7 +69,7 @@ class AdProviderManager {
         viewGroup: ViewGroup?,
         nativeAdAttributes: NativeAdAttributes,
         useDefaultNativeAdView: Boolean,
-        adSize: HamrahAdsBannerType?,
+        adSize: AdSizeType?,
     ) {
 
         if (index >= adUnits.size) {

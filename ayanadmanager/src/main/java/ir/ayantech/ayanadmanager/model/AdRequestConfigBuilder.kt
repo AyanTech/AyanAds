@@ -2,13 +2,12 @@ package ir.ayantech.ayanadmanager.model
 
 import android.app.Activity
 import android.view.ViewGroup
-import com.google.android.gms.ads.AdSize
 import ir.ayantech.ayanadmanager.core.AdCallback
 import ir.ayantech.ayanadmanager.model.api.AddStatisticsInputParameters
 import ir.ayantech.ayanadmanager.networks.hamrahAds.components.NativeAdAttributes
+import ir.ayantech.ayanadmanager.utils.AdSizeType
 import ir.ayantech.ayanadmanager.utils.ContainerType
 import ir.ayantech.ayanadmanager.utils.constant.AdSource
-import ir.ayantech.hamrahads.domain.enums.HamrahAdsBannerType
 
 class AdRequestConfigBuilder(
     private val containerType: ContainerType,
@@ -17,20 +16,19 @@ class AdRequestConfigBuilder(
     private val callback: AdCallback
 ) {
 
-    private var hamrahAdSize: HamrahAdsBannerType? = null
-    private var googleAdSize: AdSize = AdSize.BANNER
+    private var adSize: AdSizeType? = null
     private var viewGroup: ViewGroup? = null
     private var nativeAdAttributes: NativeAdAttributes = NativeAdAttributes()
     private var useDefaultNativeAdView: Boolean = false
     private var adUnitId: String? = null
 
     fun setHamrahAdConfig(
-        adSize: HamrahAdsBannerType?,
+        adSize: AdSizeType?,
         viewGroup: ViewGroup?,
         nativeAdAttributes: NativeAdAttributes,
         useDefaultNativeAdView: Boolean
     ): AdRequestConfigBuilder {
-        this.hamrahAdSize = adSize
+        this.adSize = adSize
         this.viewGroup = viewGroup
         this.nativeAdAttributes = nativeAdAttributes
         this.useDefaultNativeAdView = useDefaultNativeAdView
@@ -46,7 +44,7 @@ class AdRequestConfigBuilder(
     fun build(adSource: AdSource): AdRequestConfig {
         return when (adSource) {
             AdSource.HamrahAd -> HamrahAdConfig(
-                adSize = hamrahAdSize,
+                adSize = adSize,
                 viewGroup = viewGroup,
                 nativeAdAttributes = nativeAdAttributes,
                 useDefaultNativeAdView = useDefaultNativeAdView,
@@ -63,7 +61,7 @@ class AdRequestConfigBuilder(
                 addStatisticsInput = addStatisticsInput,
                 adUnitId = adUnitId ?: "",
                 callback = callback,
-                adSize = googleAdSize,
+                adSize = adSize,
                 useDefaultNativeAdView = useDefaultNativeAdView
             )
 

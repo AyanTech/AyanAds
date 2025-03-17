@@ -62,7 +62,7 @@ class HamrahAdProvider : AdProvider {
                 ContainerType.Banner -> showBannerAd(
                     activity = activity as AppCompatActivity,
                     viewGroup = viewGroup,
-                    adSize = adSize,
+                    adSize = getAdSize(),
                     statistics = addStatisticsInput,
                     callback = callback
                 )
