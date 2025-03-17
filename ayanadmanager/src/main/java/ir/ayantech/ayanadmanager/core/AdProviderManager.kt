@@ -126,7 +126,13 @@ class AdProviderManager {
             val adConfig =
                 AdRequestConfigBuilder(containerType, activity, addStatistics, callbackObj).apply {
                     when (it.AdSource) {
-                        AdSource.AdMob -> setAdMobConfig(it.AdUnitId, viewGroup)
+                        AdSource.AdMob -> setAdMobConfig(
+                            it.AdUnitId,
+                            viewGroup,
+                            useDefaultNativeAdView,
+                            nativeAdAttributes,
+                        )
+
                         AdSource.HamrahAd -> setHamrahAdConfig(
                             adSize,
                             viewGroup,

@@ -35,8 +35,15 @@ class AdRequestConfigBuilder(
         return this
     }
 
-    fun setAdMobConfig(adUnitId: String, viewGroup: ViewGroup?): AdRequestConfigBuilder {
+    fun setAdMobConfig(
+        adUnitId: String,
+        viewGroup: ViewGroup?,
+        useDefaultNativeAdView: Boolean,
+        nativeAdAttributes: NativeAdAttributes
+    ): AdRequestConfigBuilder {
         this.viewGroup = viewGroup
+        this.useDefaultNativeAdView = useDefaultNativeAdView
+        this.nativeAdAttributes = nativeAdAttributes
         this.adUnitId = adUnitId
         return this
     }
@@ -62,6 +69,7 @@ class AdRequestConfigBuilder(
                 adUnitId = adUnitId ?: "",
                 callback = callback,
                 adSize = adSize,
+                nativeAdAttributes = nativeAdAttributes,
                 useDefaultNativeAdView = useDefaultNativeAdView
             )
 

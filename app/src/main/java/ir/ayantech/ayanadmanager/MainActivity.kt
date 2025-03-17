@@ -4,11 +4,15 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.toColorInt
 import ir.ayantech.ayanadmanager.core.AdCallback
 import ir.ayantech.ayanadmanager.core.AdProvider
 import ir.ayantech.ayanadmanager.core.AyanAdManager
 import ir.ayantech.ayanadmanager.core.AyanAdManager.adProvider
 import ir.ayantech.ayanadmanager.networks.hamrahAds.HamrahAdProvider
+import ir.ayantech.ayanadmanager.networks.hamrahAds.components.NativeAdAttributes
 import ir.ayantech.ayanadmanager.utils.constant.AppMarket
 
 class MainActivity : AppCompatActivity() {
@@ -54,28 +58,37 @@ class MainActivity : AppCompatActivity() {
             )
         }
         findViewById<Button>(R.id.ad2).setOnClickListener {
-            adProvider.destroy()
-//            AyanAdManager.showAd(
-//                useDefaultNativeAdView = true,
-//                containerKey = admobBannerContainerKey,
-//                activity = this,
-//                adContainerId = findViewById(R.id.nativeAdMob),
-//                adSize = null,
-//                adCallback = object : AdCallback {
-//                    override fun onAdLoaded() {
-//                        Log.d("mjmjmj", "onAdLoaded: ")
-//                    }
-//
-//                    override fun onAdClicked() {
-//                        Log.d("mjmjmj", "onAdClicked: ")
-//                    }
-//
-//                    override fun onAdFailed(error: String) {
-//                        Log.d("mjmjmj", "onAdFailed: $error ")
-//                    }
-//
-//                }
-//            )
+//            adProvider.destroy()
+            AyanAdManager.showAd(
+                useDefaultNativeAdView = true,
+                containerKey = admobNativeContainerKey,
+                activity = this,
+                adContainerId = findViewById(R.id.nativeAdMob),
+                nativeAdAttributes = NativeAdAttributes(
+                    titleColor = ContextCompat.getColor(
+                        this,
+                        R.color.black
+                    ),
+                    buttonTextColor = "#000000".toColorInt(),
+                    buttonBackgroundTint = "#ffffff".toColorInt(),
+                    typeface = ResourcesCompat.getFont(this, R.font.medium)
+                ),
+                adSize = null,
+                adCallback = object : AdCallback {
+                    override fun onAdLoaded() {
+                        Log.d("mjmjmj", "onAdLoaded: ")
+                    }
+
+                    override fun onAdClicked() {
+                        Log.d("mjmjmj", "onAdClicked: ")
+                    }
+
+                    override fun onAdFailed(error: String) {
+                        Log.d("mjmjmj", "onAdFailed: $error ")
+                    }
+
+                }
+            )
         }
         findViewById<Button>(R.id.ad3).setOnClickListener {
             AyanAdManager.showAd(
@@ -84,15 +97,7 @@ class MainActivity : AppCompatActivity() {
                 activity = this,
                 adContainerId = findViewById(R.id.nativeAdMob),
                 adSize = null,
-//                nativeAdAttributes = NativeAdAttributes(
-//                    titleColor = ContextCompat.getColor(
-//                        this,
-//                        R.color.black
-//                    ),
-//                    buttonTextColor = "#000000".toColorInt(),
-//                    buttonBackgroundTint = "#ffffff".toColorInt(),
-//                    typeface = ResourcesCompat.getFont(this, R.font.medium)
-//                ),
+
                 adCallback = object : AdCallback {
                     override fun onAdLoaded() {
                         Log.d("mjmjmj", "onAdLoaded: ")

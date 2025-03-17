@@ -1,12 +1,14 @@
 package ir.ayantech.ayanadmanager.networks.admob
 
 import android.app.Activity
+import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.RatingBar
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.AdRequest
@@ -28,11 +30,13 @@ import ir.ayantech.ayanadmanager.databinding.AdmobNativeLayoutBinding
 import ir.ayantech.ayanadmanager.model.AdMobConfig
 import ir.ayantech.ayanadmanager.model.AdRequestConfig
 import ir.ayantech.ayanadmanager.model.api.AddStatisticsInputParameters
+import ir.ayantech.ayanadmanager.networks.hamrahAds.components.NativeAdAttributes
 import ir.ayantech.ayanadmanager.utils.ContainerType
 import ir.ayantech.ayanadmanager.utils.Logger
 import ir.ayantech.ayanadmanager.utils.constant.Config.GOOGLE_AD_VIEW
 import ir.ayantech.ayanadmanager.utils.makeGone
 import ir.ayantech.ayanadmanager.utils.makeVisible
+import ir.ayantech.ayanadmanager.utils.toPx
 import ir.ayantech.ayanadmanager.utils.trying
 
 class AdmobProvider : AdProvider {
@@ -80,6 +84,7 @@ class AdmobProvider : AdProvider {
                             statistics = addStatisticsInput,
                             viewGroup = it,
                             useDefaultNativeView = useDefaultNativeAdView,
+                            nativeAdAttributes = nativeAdAttributes,
                             callback = callback
                         )
                     } ?: {
@@ -167,6 +172,7 @@ class AdmobProvider : AdProvider {
         activity: Activity,
         statistics: AddStatisticsInputParameters,
         useDefaultNativeView: Boolean,
+        nativeAdAttributes: NativeAdAttributes,
         viewGroup: ViewGroup,
         callback: AdCallback
     ) {
@@ -189,7 +195,7 @@ class AdmobProvider : AdProvider {
 
             if (useDefaultNativeView) {
                 val defaultNativeBinding = AdmobNativeLayoutBinding.inflate(activity.layoutInflater)
-                populateDefaultNativeAdView(nativeAd, defaultNativeBinding)
+                populateDefaultNativeAdView(nativeAd, defaultNativeBinding, nativeAdAttributes)
                 viewGroup.removeAllViews()
                 viewGroup.addView(defaultNativeBinding.root)
             } else {
@@ -300,7 +306,11 @@ class AdmobProvider : AdProvider {
 
     }
 
-    private fun populateDefaultNativeAdView(nativeAd: NativeAd, binding: AdmobNativeLayoutBinding) {
+    private fun populateDefaultNativeAdView(
+        nativeAd: NativeAd,
+        binding: AdmobNativeLayoutBinding,
+        nativeAdAttributes: NativeAdAttributes
+    ) {
 
         val nativeAdView = binding.root
 
@@ -314,7 +324,12 @@ class AdmobProvider : AdProvider {
                 iconView = hamrahAdNativeLogo
             }
 
-            hamrahAdNativeTitle.text = nativeAd.headline
+            hamrahAdNativeTitle.apply {
+                text = nativeAd.headline
+                setTextColor(nativeAdAttributes.titleColor)
+                setTypeface(nativeAdAttributes.typeface)
+            }
+
             nativeAd.mediaContent?.let { binding.mediaView.mediaContent = it }
 
             if (nativeAd.body.isNullOrBlank()) {
@@ -323,6 +338,8 @@ class AdmobProvider : AdProvider {
                 hamrahAdNativeDescription.apply {
                     makeVisible()
                     text = nativeAd.body
+                    setTextColor(nativeAdAttributes.descriptionColor)
+                    setTypeface(nativeAdAttributes.typeface)
                 }
             }
 
@@ -339,6 +356,16 @@ class AdmobProvider : AdProvider {
                 hamrahAdNativeCta.apply {
                     makeVisible()
                     text = nativeAd.callToAction
+                    layoutParams = layoutParams.apply {
+                        width = nativeAdAttributes.buttonWidth.toPx(context)
+                        height = nativeAdAttributes.buttonHeight.toPx(context)
+                    }
+                    setTypeface(nativeAdAttributes.typeface)
+                    setTextColor(nativeAdAttributes.buttonTextColor)
+                    background =
+                        ContextCompat.getDrawable(this.context, R.drawable.button_background)
+                    backgroundTintList =
+                        ColorStateList.valueOf(nativeAdAttributes.buttonBackgroundTint)
                 }
             }
 
