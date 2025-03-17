@@ -1,38 +1,39 @@
 package ir.ayantech.ayanadmanager
 
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
-import androidx.core.content.res.ResourcesCompat
 import ir.ayantech.ayanadmanager.core.AdCallback
 import ir.ayantech.ayanadmanager.core.AyanAdManager
 import ir.ayantech.ayanadmanager.networks.hamrahAds.HamrahAdProvider
-import ir.ayantech.ayanadmanager.networks.hamrahAds.components.NativeAdAttributes
 import ir.ayantech.ayanadmanager.utils.constant.AppMarket
 
 class MainActivity : AppCompatActivity() {
-    val appKey = "c89ce51c1c6686ac560580b28aba0642b6fc639fa93d7543bf0833c5ca9c965c"
+    val appKey = "0d2d289e1f0c76143af11bab6fb60881099983743e223d9e8b4cbd06a84c07d7"
+
+    val hamrahAdNativeContainerKey = "e60e4754-9b02-4af2-ab70-303afb873729"
+    val hamrahAdBannerContainerKey = "1602e211-75cc-4da9-90f4-0fcca27dfe3e"
+    val hamrahAdInterstitialContainerKey = "ff9d1067-bce0-463d-8697-024c35003d5c"
+    val admobInterstitialContainerKey = "ff9d1067-bce0-463d-8697-024c35003d5c"
+    val admobBannerContainerKey = "1602e211-75cc-4da9-90f4-0fcca27dfe3e"
+    val admobNativeContainerKey = "e60e4754-9b02-4af2-ab70-303afb873729"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         AyanAdManager.initialize(
-            context = this,
+            activity = this,
             appKey = appKey,
             appMarket = AppMarket.CafeBazaar
         )
 
-
         findViewById<Button>(R.id.ad1).setOnClickListener {
-
             AyanAdManager.showAd(
-                containerKey = "6ec7f088-4800-4fda-ac03-b7ec88e9a829",
-                context = this,
-                adContainerId = findViewById(R.id.nativeView),
+                containerKey = admobBannerContainerKey,
+                activity = this,
+                adContainerId = findViewById(R.id.banner),
                 adSize = null,
                 adCallback = object : AdCallback {
                     override fun onAdLoaded() {
@@ -52,9 +53,10 @@ class MainActivity : AppCompatActivity() {
         }
         findViewById<Button>(R.id.ad2).setOnClickListener {
             AyanAdManager.showAd(
-                containerKey = "2ec0d99d-baae-40b6-a6aa-cb5f8f41f1a3",
-                context = this,
-                adContainerId = findViewById(R.id.banner),
+                useDefaultNativeAdView = true,
+                containerKey = admobNativeContainerKey,
+                activity = this,
+                adContainerId = findViewById(R.id.nativeAdMob),
                 adSize = null,
                 adCallback = object : AdCallback {
                     override fun onAdLoaded() {
@@ -74,20 +76,20 @@ class MainActivity : AppCompatActivity() {
         }
         findViewById<Button>(R.id.ad3).setOnClickListener {
             AyanAdManager.showAd(
-                useDefaultNativeAdView = true,
-                containerKey = "aa76b03d-2cde-49ef-9c2a-6853e343da60",
-                context = this,
-                adContainerId = findViewById(R.id.banner),
+                useDefaultNativeAdView = false,
+                containerKey = admobNativeContainerKey,
+                activity = this,
+                adContainerId = findViewById(R.id.nativeAdMob),
                 adSize = null,
-                nativeAdAttributes = NativeAdAttributes(
-                    titleColor = ContextCompat.getColor(
-                        this,
-                        R.color.black
-                    ),
-                    buttonTextColor = Color.parseColor("#000000"),
-                    buttonBackgroundTint = Color.parseColor("#ffffff"),
-                    typeface = ResourcesCompat.getFont(this, R.font.medium)
-                ),
+//                nativeAdAttributes = NativeAdAttributes(
+//                    titleColor = ContextCompat.getColor(
+//                        this,
+//                        R.color.black
+//                    ),
+//                    buttonTextColor = "#000000".toColorInt(),
+//                    buttonBackgroundTint = "#ffffff".toColorInt(),
+//                    typeface = ResourcesCompat.getFont(this, R.font.medium)
+//                ),
                 adCallback = object : AdCallback {
                     override fun onAdLoaded() {
                         Log.d("mjmjmj", "onAdLoaded: ")

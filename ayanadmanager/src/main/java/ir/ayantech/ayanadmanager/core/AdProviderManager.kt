@@ -1,8 +1,9 @@
 package ir.ayantech.ayanadmanager.core
 
-import android.content.Context
+import android.app.Activity
 import android.view.ViewGroup
 import ir.ayantech.ayanadmanager.core.AyanAdManager.appMarket
+import ir.ayantech.ayanadmanager.model.AdRequestConfigBuilder
 import ir.ayantech.ayanadmanager.model.api.AdUnit
 import ir.ayantech.ayanadmanager.model.api.AddStatisticsInputParameters
 import ir.ayantech.ayanadmanager.networks.adivery.AdiveryProvider
@@ -11,6 +12,7 @@ import ir.ayantech.ayanadmanager.networks.hamrahAds.HamrahAdProvider
 import ir.ayantech.ayanadmanager.networks.hamrahAds.components.NativeAdAttributes
 import ir.ayantech.ayanadmanager.networks.tapsell.TapsellProvider
 import ir.ayantech.ayanadmanager.utils.ContainerType
+import ir.ayantech.ayanadmanager.utils.Logger
 import ir.ayantech.ayanadmanager.utils.constant.AdSource
 import ir.ayantech.ayanadmanager.utils.constant.Config.Platform
 import ir.ayantech.ayanadmanager.utils.getAppVersion
@@ -25,7 +27,7 @@ class AdProviderManager {
      *
      * @param adUnits The list of available ad units.
      * @param callback The callback to handle ad loading events.
-     * @param context The context for ad operations.
+     * @param activity The activity for ad operations.
      * @param containerKey The key of containerAd.
      * @param viewGroup The view group to display the ad.
      * @param nativeAdAttributes Attributes like (textSize ,...) to customize DefaultNativeAd views.
@@ -36,7 +38,7 @@ class AdProviderManager {
         containerKey: String,
         adUnits: List<AdUnit>,
         callback: AdCallback,
-        context: Context,
+        activity: Activity,
         viewGroup: ViewGroup? = null,
         nativeAdAttributes: NativeAdAttributes,
         useDefaultNativeAdView: Boolean,
@@ -48,7 +50,7 @@ class AdProviderManager {
             index = 0,
             containerType = adUnits.first().ContainerType,
             callback = callback,
-            context = context,
+            activity = activity,
             viewGroup = viewGroup,
             nativeAdAttributes = nativeAdAttributes,
             useDefaultNativeAdView = useDefaultNativeAdView,
@@ -65,7 +67,7 @@ class AdProviderManager {
         index: Int,
         containerType: ContainerType,
         callback: AdCallback,
-        context: Context,
+        activity: Activity,
         viewGroup: ViewGroup?,
         nativeAdAttributes: NativeAdAttributes,
         useDefaultNativeAdView: Boolean,
@@ -83,7 +85,7 @@ class AdProviderManager {
                 AdSource = it.AdSource.name,
                 AdUnitId = it.AdUnitId,
                 AppMarket = appMarket.value,
-                AppVersion = getAppVersion(context),
+                AppVersion = getAppVersion(activity),
                 FailureCause = null,
                 OsName = Platform,
                 OsVersion = getOsVersion()
@@ -96,39 +98,50 @@ class AdProviderManager {
                 AdSource.Tapsell -> TapsellProvider()
             }
 
-            provider.loadAd(
-                containerType = containerType,
-                context = context,
-                addStatisticsInput = addStatistics,
-                viewGroup = viewGroup,
-                adSize = adSize,
-                nativeAdAttributes = nativeAdAttributes,
-                useDefaultNativeAdView = useDefaultNativeAdView,
-                callback = object : AdCallback {
-                    override fun onAdLoaded() {
-                        callback.onAdLoaded()
-                    }
+            val callbackObj = object : AdCallback {
+                override fun onAdLoaded() {
+                    callback.onAdLoaded()
+                }
 
-                    override fun onAdClicked() {
-                        callback.onAdClicked()
-                    }
+                override fun onAdClicked() {
+                    callback.onAdClicked()
+                }
 
-                    override fun onAdFailed(error: String) {
-                        // Try the next provider if this one fails
-                        tryNextProvider(
-                            containerKey = containerKey,
-                            adUnits = adUnits,
-                            index = index + 1,
-                            containerType = containerType,
-                            callback = callback,
-                            context = context,
-                            viewGroup = viewGroup,
-                            nativeAdAttributes = nativeAdAttributes,
-                            useDefaultNativeAdView = useDefaultNativeAdView,
-                            adSize = adSize
+                override fun onAdFailed(error: String) {
+                    Logger.e(error)
+                    // Try the next provider if this one fails
+                    tryNextProvider(
+                        containerKey = containerKey,
+                        adUnits = adUnits,
+                        index = index + 1,
+                        containerType = containerType,
+                        callback = callback,
+                        activity = activity,
+                        viewGroup = viewGroup,
+                        nativeAdAttributes = nativeAdAttributes,
+                        useDefaultNativeAdView = useDefaultNativeAdView,
+                        adSize = adSize
+                    )
+                }
+            }
+
+            val adConfig =
+                AdRequestConfigBuilder(containerType, activity, addStatistics, callbackObj).apply {
+                    when (it.AdSource) {
+                        AdSource.Adivery -> {}
+                        AdSource.AdMob -> setAdMobConfig(it.AdUnitId, viewGroup)
+                        AdSource.HamrahAd -> setHamrahAdConfig(
+                            adSize,
+                            viewGroup,
+                            nativeAdAttributes,
+                            useDefaultNativeAdView
                         )
+
+                        AdSource.Tapsell -> {}
                     }
-                })
+                }.build(it.AdSource)
+
+            provider.loadAd(adConfig)
         }
 
     }
