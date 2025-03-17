@@ -12,6 +12,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AyanAdManager"
         tools:targetApi="31">
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-2650198364422513~2780435417"/>
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
