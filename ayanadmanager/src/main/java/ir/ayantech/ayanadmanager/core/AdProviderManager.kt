@@ -6,11 +6,9 @@ import ir.ayantech.ayanadmanager.core.AyanAdManager.appMarket
 import ir.ayantech.ayanadmanager.model.AdRequestConfigBuilder
 import ir.ayantech.ayanadmanager.model.api.AdUnit
 import ir.ayantech.ayanadmanager.model.api.AddStatisticsInputParameters
-import ir.ayantech.ayanadmanager.networks.adivery.AdiveryProvider
 import ir.ayantech.ayanadmanager.networks.admob.AdmobProvider
 import ir.ayantech.ayanadmanager.networks.hamrahAds.HamrahAdProvider
 import ir.ayantech.ayanadmanager.networks.hamrahAds.components.NativeAdAttributes
-import ir.ayantech.ayanadmanager.networks.tapsell.TapsellProvider
 import ir.ayantech.ayanadmanager.utils.ContainerType
 import ir.ayantech.ayanadmanager.utils.Logger
 import ir.ayantech.ayanadmanager.utils.constant.AdSource
@@ -92,11 +90,11 @@ class AdProviderManager {
             )
 
             val provider = when (it.AdSource) {
-                AdSource.Adivery -> AdiveryProvider()
                 AdSource.AdMob -> AdmobProvider()
                 AdSource.HamrahAd -> HamrahAdProvider()
-                AdSource.Tapsell -> TapsellProvider()
             }
+
+            AyanAdManager.adProvider = provider
 
             val callbackObj = object : AdCallback {
                 override fun onAdLoaded() {
@@ -128,7 +126,6 @@ class AdProviderManager {
             val adConfig =
                 AdRequestConfigBuilder(containerType, activity, addStatistics, callbackObj).apply {
                     when (it.AdSource) {
-                        AdSource.Adivery -> {}
                         AdSource.AdMob -> setAdMobConfig(it.AdUnitId, viewGroup)
                         AdSource.HamrahAd -> setHamrahAdConfig(
                             adSize,
@@ -136,8 +133,6 @@ class AdProviderManager {
                             nativeAdAttributes,
                             useDefaultNativeAdView
                         )
-
-                        AdSource.Tapsell -> {}
                     }
                 }.build(it.AdSource)
 

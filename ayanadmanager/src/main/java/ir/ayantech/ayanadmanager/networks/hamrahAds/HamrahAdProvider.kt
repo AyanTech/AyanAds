@@ -18,6 +18,7 @@ import ir.ayantech.ayanadmanager.model.api.AddStatisticsInputParameters
 import ir.ayantech.ayanadmanager.networks.hamrahAds.components.NativeAdAttributes
 import ir.ayantech.ayanadmanager.networks.hamrahAds.components.init
 import ir.ayantech.ayanadmanager.utils.ContainerType
+import ir.ayantech.ayanadmanager.utils.trying
 import ir.ayantech.hamrahads.HamrahAds
 import ir.ayantech.hamrahads.core.RequestBannerAds
 import ir.ayantech.hamrahads.core.RequestInterstitialAds
@@ -297,8 +298,10 @@ class HamrahAdProvider : AdProvider {
     }
 
     override fun destroy() {
-        destroyBannerAdIfExist()
-        destroyInterstitialAdIfExist()
-        destroyNativeAdIfExist()
+        trying {
+            destroyBannerAdIfExist()
+            destroyInterstitialAdIfExist()
+            destroyNativeAdIfExist()
+        }
     }
 }

@@ -33,11 +33,13 @@ import ir.ayantech.ayanadmanager.utils.Logger
 import ir.ayantech.ayanadmanager.utils.constant.Config.GOOGLE_AD_VIEW
 import ir.ayantech.ayanadmanager.utils.makeGone
 import ir.ayantech.ayanadmanager.utils.makeVisible
+import ir.ayantech.ayanadmanager.utils.trying
 
 class AdmobProvider : AdProvider {
 
     private var mInterstitialAd: InterstitialAd? = null
     private var currentNativeAd: NativeAd? = null
+    private var adView: AdView? = null
 
     override fun loadAd(
         config: AdRequestConfig
@@ -51,8 +53,9 @@ class AdmobProvider : AdProvider {
             when (containerType) {
                 ContainerType.Banner -> {
                     viewGroup?.let {
+                        adView = getAdView(viewGroup).findViewWithTag(GOOGLE_AD_VIEW)
                         showBannerAd(
-                            adView = getAdView(viewGroup).findViewWithTag(GOOGLE_AD_VIEW),
+                            adView = adView,
                             statistics = addStatisticsInput,
                             callback = callback
                         )
@@ -83,11 +86,9 @@ class AdmobProvider : AdProvider {
                         Logger.e("ViewGroup can not be null !")
                         callback.onAdFailed("ViewGroup can not be null !")
                     }
-
                 }
             }
         }
-
     }
 
     private fun showBannerAd(
@@ -126,6 +127,7 @@ class AdmobProvider : AdProvider {
         statistics: AddStatisticsInputParameters,
         callback: AdCallback
     ) {
+        mInterstitialAd = null
         val adRequest = AdRequest.Builder().build()
         InterstitialAd.load(
             activity,
@@ -168,6 +170,8 @@ class AdmobProvider : AdProvider {
         viewGroup: ViewGroup,
         callback: AdCallback
     ) {
+        currentNativeAd?.destroy()
+
         val builder = AdLoader.Builder(activity, statistics.AdUnitId ?: "")
 
         builder.forNativeAd { nativeAd ->
@@ -357,8 +361,23 @@ class AdmobProvider : AdProvider {
         sendStatistics(statistics)
     }
 
-    override fun destroy() {
+    private fun destroyBannerAd() {
+        adView?.destroy()
+    }
+
+    private fun destroyNativeAd() {
         currentNativeAd?.destroy()
+    }
+
+    private fun destroyInterstitialAd() {
         mInterstitialAd = null
+    }
+
+    override fun destroy() {
+        trying {
+            destroyInterstitialAd()
+            destroyBannerAd()
+            destroyNativeAd()
+        }
     }
 }

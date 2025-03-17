@@ -27,6 +27,7 @@ import kotlinx.coroutines.launch
 
 object AyanAdManager {
     private var isInitialized = false
+    lateinit var adProvider: AdProvider
     lateinit var ayanAdApi: AyanApi
     private lateinit var adManager: AdProviderManager
     var clickTracker = ""
@@ -77,7 +78,6 @@ object AyanAdManager {
                         }
                     }
 
-                    AdSource.Adivery -> {}
                     AdSource.AdMob -> {
                         if (it.priority.isNullOrEmpty().not()) {
                             initializeMobileAds(activity)
@@ -85,8 +85,6 @@ object AyanAdManager {
                             return@getConfig
                         }
                     }
-
-                    AdSource.Tapsell -> {}
                 }
             }
         }

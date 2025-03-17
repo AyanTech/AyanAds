@@ -56,7 +56,6 @@ class AdRequestConfigBuilder(
                 callback = callback
             )
 
-            AdSource.Adivery -> TODO()
             AdSource.AdMob -> AdMobConfig(
                 containerType = containerType,
                 activity = activity,
@@ -68,9 +67,7 @@ class AdRequestConfigBuilder(
                 useDefaultNativeAdView = useDefaultNativeAdView
             )
 
-            AdSource.Tapsell -> TODO()
         }
     }
-
 
 }

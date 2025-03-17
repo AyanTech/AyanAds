@@ -5,7 +5,9 @@ import android.util.Log
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import ir.ayantech.ayanadmanager.core.AdCallback
+import ir.ayantech.ayanadmanager.core.AdProvider
 import ir.ayantech.ayanadmanager.core.AyanAdManager
+import ir.ayantech.ayanadmanager.core.AyanAdManager.adProvider
 import ir.ayantech.ayanadmanager.networks.hamrahAds.HamrahAdProvider
 import ir.ayantech.ayanadmanager.utils.constant.AppMarket
 
@@ -31,7 +33,7 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.ad1).setOnClickListener {
             AyanAdManager.showAd(
-                containerKey = admobBannerContainerKey,
+                containerKey = hamrahAdBannerContainerKey,
                 activity = this,
                 adContainerId = findViewById(R.id.banner),
                 adSize = null,
@@ -52,27 +54,28 @@ class MainActivity : AppCompatActivity() {
             )
         }
         findViewById<Button>(R.id.ad2).setOnClickListener {
-            AyanAdManager.showAd(
-                useDefaultNativeAdView = true,
-                containerKey = admobNativeContainerKey,
-                activity = this,
-                adContainerId = findViewById(R.id.nativeAdMob),
-                adSize = null,
-                adCallback = object : AdCallback {
-                    override fun onAdLoaded() {
-                        Log.d("mjmjmj", "onAdLoaded: ")
-                    }
-
-                    override fun onAdClicked() {
-                        Log.d("mjmjmj", "onAdClicked: ")
-                    }
-
-                    override fun onAdFailed(error: String) {
-                        Log.d("mjmjmj", "onAdFailed: $error ")
-                    }
-
-                }
-            )
+            adProvider.destroy()
+//            AyanAdManager.showAd(
+//                useDefaultNativeAdView = true,
+//                containerKey = admobBannerContainerKey,
+//                activity = this,
+//                adContainerId = findViewById(R.id.nativeAdMob),
+//                adSize = null,
+//                adCallback = object : AdCallback {
+//                    override fun onAdLoaded() {
+//                        Log.d("mjmjmj", "onAdLoaded: ")
+//                    }
+//
+//                    override fun onAdClicked() {
+//                        Log.d("mjmjmj", "onAdClicked: ")
+//                    }
+//
+//                    override fun onAdFailed(error: String) {
+//                        Log.d("mjmjmj", "onAdFailed: $error ")
+//                    }
+//
+//                }
+//            )
         }
         findViewById<Button>(R.id.ad3).setOnClickListener {
             AyanAdManager.showAd(
@@ -111,6 +114,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        HamrahAdProvider().destroy()
+
     }
 }
