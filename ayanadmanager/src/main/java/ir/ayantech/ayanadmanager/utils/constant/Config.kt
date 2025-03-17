@@ -6,4 +6,5 @@ object Config {
     const val TAG = "AyanAdManager"
     const val Timeout = 120
     const val Platform = "android"
+    const val GOOGLE_AD_VIEW = "googleAdView"
 }
