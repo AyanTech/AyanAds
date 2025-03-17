@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import com.google.android.gms.ads.MobileAds
 import ir.ayantech.ayanadmanager.model.api.AdProviderPriority
 import ir.ayantech.ayanadmanager.model.api.AdUnit
+import ir.ayantech.ayanadmanager.networks.admob.ConsentManager
 import ir.ayantech.ayanadmanager.networks.hamrahAds.components.NativeAdAttributes
 import ir.ayantech.ayanadmanager.utils.AdSizeType
 import ir.ayantech.ayanadmanager.utils.Logger
@@ -94,6 +95,7 @@ object AyanAdManager {
     private fun initializeMobileAds(activity: Activity) {
         CoroutineScope(Dispatchers.IO).launch {
             MobileAds.initialize(activity) {}
+            ConsentManager.initialize(activity)
         }
     }
 

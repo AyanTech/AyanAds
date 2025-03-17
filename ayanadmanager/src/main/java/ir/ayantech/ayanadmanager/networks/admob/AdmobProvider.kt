@@ -48,52 +48,57 @@ class AdmobProvider : AdProvider {
     override fun loadAd(
         config: AdRequestConfig
     ) {
-        (config as AdMobConfig).apply {
-            if (addStatisticsInput.AdUnitId.isNullOrEmpty()) {
-                callback.onAdFailed("AdUnitId cannot be empty")
-                return
-            }
+        if (ConsentManager.canShowAds()) {
+            (config as AdMobConfig).apply {
+                if (addStatisticsInput.AdUnitId.isNullOrEmpty()) {
+                    callback.onAdFailed("AdUnitId cannot be empty")
+                    return
+                }
 
-            when (containerType) {
-                ContainerType.Banner -> {
-                    viewGroup?.let {
-                        adView = getAdView(viewGroup).findViewWithTag(GOOGLE_AD_VIEW)
-                        showBannerAd(
-                            adView = adView,
-                            statistics = addStatisticsInput,
-                            callback = callback
-                        )
-                    } ?: {
-                        Logger.e("ViewGroup can not be null !")
-                        callback.onAdFailed("ViewGroup can not be null !")
+                when (containerType) {
+                    ContainerType.Banner -> {
+                        viewGroup?.let {
+                            adView = getAdView(viewGroup).findViewWithTag(GOOGLE_AD_VIEW)
+                            showBannerAd(
+                                adView = adView,
+                                statistics = addStatisticsInput,
+                                callback = callback
+                            )
+                        } ?: {
+                            Logger.e("ViewGroup can not be null !")
+                            callback.onAdFailed("ViewGroup can not be null !")
+                        }
                     }
-                }
 
-                ContainerType.Interstitial -> {
-                    showInterstitialAd(
-                        activity = activity,
-                        statistics = addStatisticsInput,
-                        callback = callback
-                    )
-                }
-
-                ContainerType.Native -> {
-                    viewGroup?.let {
-                        showNativeAd(
+                    ContainerType.Interstitial -> {
+                        showInterstitialAd(
                             activity = activity,
                             statistics = addStatisticsInput,
-                            viewGroup = it,
-                            useDefaultNativeView = useDefaultNativeAdView,
-                            nativeAdAttributes = nativeAdAttributes,
                             callback = callback
                         )
-                    } ?: {
-                        Logger.e("ViewGroup can not be null !")
-                        callback.onAdFailed("ViewGroup can not be null !")
+                    }
+
+                    ContainerType.Native -> {
+                        viewGroup?.let {
+                            showNativeAd(
+                                activity = activity,
+                                statistics = addStatisticsInput,
+                                viewGroup = it,
+                                useDefaultNativeView = useDefaultNativeAdView,
+                                nativeAdAttributes = nativeAdAttributes,
+                                callback = callback
+                            )
+                        } ?: {
+                            Logger.e("ViewGroup can not be null !")
+                            callback.onAdFailed("ViewGroup can not be null !")
+                        }
                     }
                 }
             }
+        } else {
+            Logger.w("Ads are currently unavailable due to privacy settings")
         }
+
     }
 
     private fun showBannerAd(
