@@ -58,5 +58,6 @@ dependencies {
     implementation(libs.hamrahAds)
     implementation(libs.ayanNetworking)
     implementation(libs.ayanNetworkGenerator)
-
+    implementation(libs.play.services.ads)
+    implementation(libs.user.messaging.platform)
 }
