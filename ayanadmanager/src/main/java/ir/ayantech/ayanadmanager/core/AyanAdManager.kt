@@ -1,7 +1,7 @@
 package ir.ayantech.ayanadmanager.core
 
-import android.app.Activity
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.ads.MobileAds
 import ir.ayantech.ayanadmanager.model.api.AdProviderPriority
 import ir.ayantech.ayanadmanager.model.api.AdUnit
@@ -14,7 +14,7 @@ import ir.ayantech.ayanadmanager.utils.StringCallBack
 import ir.ayantech.ayanadmanager.utils.constant.AdSource
 import ir.ayantech.ayanadmanager.utils.constant.AppMarket
 import ir.ayantech.ayanadmanager.utils.constant.Config
-import ir.ayantech.ayanadmanager.utils.constant.Config.Timeout
+import ir.ayantech.ayanadmanager.utils.constant.Config.TIMEOUT
 import ir.ayantech.ayannetworking.BuildConfig
 import ir.ayantech.ayannetworking.api.AyanApi
 import ir.ayantech.ayannetworking.ayanModel.LogLevel
@@ -37,7 +37,7 @@ object AyanAdManager {
     lateinit var appMarket: AppMarket
 
     fun initialize(
-        activity: Activity,
+        appCompatActivity: AppCompatActivity,
         appKey: String,
         appMarket: AppMarket,
         onSuccess: SimpleCallBack = { Logger.d("Initialization successful.") },
@@ -55,7 +55,7 @@ object AyanAdManager {
             return
         }
 
-        createAyanAdApi(activity)
+        createAyanAdApi(appCompatActivity)
 
         getConfig(appKey = appKey) { response ->
 
@@ -70,7 +70,7 @@ object AyanAdManager {
                 when (it.adSource) {
                     AdSource.HamrahAd -> {
                         if (it.priority.isNullOrEmpty().not()) {
-                            initializeHamrahAds(activity, it.priority, onSuccess, onError)
+                            initializeHamrahAds(appCompatActivity, it.priority, onSuccess, onError)
                         } else {
                             isInitialized = false
                             Logger.e("HamrahAd is not initialize, appID is not valid.")
@@ -80,7 +80,7 @@ object AyanAdManager {
 
                     AdSource.AdMob -> {
                         if (it.priority.isNullOrEmpty().not()) {
-                            initializeMobileAds(activity)
+                            initializeMobileAds(appCompatActivity)
                             isInitialized = false
                             return@getConfig
                         }
@@ -92,31 +92,31 @@ object AyanAdManager {
         isInitialized = true
     }
 
-    private fun initializeMobileAds(activity: Activity) {
+    private fun initializeMobileAds(appCompatActivity: AppCompatActivity) {
         CoroutineScope(Dispatchers.IO).launch {
-            MobileAds.initialize(activity) {}
-            ConsentManager.initialize(activity)
+            MobileAds.initialize(appCompatActivity) {}
+            ConsentManager.initialize(appCompatActivity)
         }
     }
 
-    private fun createAyanAdApi(activity: Activity) {
+    private fun createAyanAdApi(appCompatActivity: AppCompatActivity) {
         ayanAdApi = AyanApi(
-            context = activity,
-            defaultBaseUrl = Config.AyanAdBaseUrl,
-            timeout = Timeout.toLong(),
+            context = appCompatActivity,
+            defaultBaseUrl = Config.AYAN_AD_BASE_URL,
+            timeout = TIMEOUT.toLong(),
             headers = hashMapOf("Accept-Language" to "fa"),
             logLevel = if (BuildConfig.DEBUG) LogLevel.LOG_ALL else LogLevel.DO_NOT_LOG
         )
     }
 
     private fun initializeHamrahAds(
-        activity: Activity,
+        appCompatActivity: AppCompatActivity,
         apiKey: String,
         onSuccess: SimpleCallBack,
         onError: StringCallBack
     ) {
         HamrahAds.Initializer()
-            .setContext(activity)
+            .setContext(appCompatActivity)
             .initId(apiKey)
             .initListener(object : HamrahAdsInitListener {
                 override fun onSuccess() {
@@ -136,7 +136,7 @@ object AyanAdManager {
      */
     fun showAd(
         containerKey: String,
-        activity: Activity,
+        appCompatActivity: AppCompatActivity,
         adSize: AdSizeType?,
         adContainerId: ViewGroup?,
         nativeAdAttributes: NativeAdAttributes = NativeAdAttributes(),
@@ -151,7 +151,7 @@ object AyanAdManager {
                     containerKey = containerKey,
                     adUnits = filteredAdUnits,
                     callback = createAdCallBack(adCallback),
-                    activity = activity,
+                    appCompatActivity = appCompatActivity,
                     viewGroup = adContainerId,
                     nativeAdAttributes = nativeAdAttributes,
                     useDefaultNativeAdView = useDefaultNativeAdView,

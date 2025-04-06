@@ -1,6 +1,5 @@
 package ir.ayantech.ayanadmanager.networks.admob
 
-import android.app.Activity
 import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
 import android.view.ViewGroup
@@ -8,6 +7,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.RatingBar
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdLoader
@@ -72,7 +72,7 @@ class AdmobProvider : AdProvider {
 
                     ContainerType.Interstitial -> {
                         showInterstitialAd(
-                            activity = activity,
+                            appCompatActivity = appCompatActivity,
                             statistics = addStatisticsInput,
                             callback = callback
                         )
@@ -81,7 +81,7 @@ class AdmobProvider : AdProvider {
                     ContainerType.Native -> {
                         viewGroup?.let {
                             showNativeAd(
-                                activity = activity,
+                                appCompatActivity = appCompatActivity,
                                 statistics = addStatisticsInput,
                                 viewGroup = it,
                                 useDefaultNativeView = useDefaultNativeAdView,
@@ -133,14 +133,14 @@ class AdmobProvider : AdProvider {
     }
 
     private fun showInterstitialAd(
-        activity: Activity,
+        appCompatActivity: AppCompatActivity,
         statistics: AddStatisticsInputParameters,
         callback: AdCallback
     ) {
         mInterstitialAd = null
         val adRequest = AdRequest.Builder().build()
         InterstitialAd.load(
-            activity,
+            appCompatActivity,
             statistics.AdUnitId ?: "",
             adRequest,
             object : InterstitialAdLoadCallback() {
@@ -167,14 +167,14 @@ class AdmobProvider : AdProvider {
                                 mInterstitialAd = null
                             }
                         }
-                    mInterstitialAd?.show(activity)
+                    mInterstitialAd?.show(appCompatActivity)
                 }
 
             })
     }
 
     private fun showNativeAd(
-        activity: Activity,
+        appCompatActivity: AppCompatActivity,
         statistics: AddStatisticsInputParameters,
         useDefaultNativeView: Boolean,
         nativeAdAttributes: NativeAdAttributes,
@@ -183,15 +183,15 @@ class AdmobProvider : AdProvider {
     ) {
         currentNativeAd?.destroy()
 
-        val builder = AdLoader.Builder(activity, statistics.AdUnitId ?: "")
+        val builder = AdLoader.Builder(appCompatActivity, statistics.AdUnitId ?: "")
 
         builder.forNativeAd { nativeAd ->
 
             /** If this callback occurs after the activity is destroyed, must call
             destroy and return or you may get a memory leak. **/
 
-            var activityDestroyed = activity.isDestroyed
-            if (activityDestroyed || activity.isFinishing || activity.isChangingConfigurations) {
+            var activityDestroyed = appCompatActivity.isDestroyed
+            if (activityDestroyed || appCompatActivity.isFinishing || appCompatActivity.isChangingConfigurations) {
                 nativeAd.destroy()
                 return@forNativeAd
             }
@@ -199,7 +199,7 @@ class AdmobProvider : AdProvider {
             currentNativeAd = nativeAd
 
             if (useDefaultNativeView) {
-                val defaultNativeBinding = AdmobNativeLayoutBinding.inflate(activity.layoutInflater)
+                val defaultNativeBinding = AdmobNativeLayoutBinding.inflate(appCompatActivity.layoutInflater)
                 populateDefaultNativeAdView(nativeAd, defaultNativeBinding, nativeAdAttributes)
                 viewGroup.removeAllViews()
                 viewGroup.addView(defaultNativeBinding.root)

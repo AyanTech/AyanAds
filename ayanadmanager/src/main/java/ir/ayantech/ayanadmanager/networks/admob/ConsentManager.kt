@@ -1,6 +1,6 @@
 package ir.ayantech.ayanadmanager.networks.admob
 
-import android.app.Activity
+import androidx.appcompat.app.AppCompatActivity
 import com.google.android.ump.ConsentInformation
 import com.google.android.ump.ConsentRequestParameters
 import com.google.android.ump.UserMessagingPlatform
@@ -10,13 +10,16 @@ object ConsentManager {
 
     private var consentInformation: ConsentInformation? = null
 
-    fun initialize(activity: Activity, onConsentUpdated: ((Boolean) -> Unit)? = null) {
+    fun initialize(
+        appCompatActivity: AppCompatActivity,
+        onConsentUpdated: ((Boolean) -> Unit)? = null
+    ) {
         val params = ConsentRequestParameters.Builder().build()
-        consentInformation = UserMessagingPlatform.getConsentInformation(activity)
+        consentInformation = UserMessagingPlatform.getConsentInformation(appCompatActivity)
 
-        consentInformation?.requestConsentInfoUpdate(activity, params, {
+        consentInformation?.requestConsentInfoUpdate(appCompatActivity, params, {
             if (consentInformation?.isConsentFormAvailable == true) {
-                loadAndShowConsentForm(activity, onConsentUpdated)
+                loadAndShowConsentForm(appCompatActivity = appCompatActivity, onConsentUpdated)
             } else {
                 onConsentUpdated?.invoke(consentInformation?.canRequestAds() != false)
             }
@@ -27,10 +30,10 @@ object ConsentManager {
     }
 
     private fun loadAndShowConsentForm(
-        activity: Activity,
+        appCompatActivity: AppCompatActivity,
         onConsentUpdated: ((Boolean) -> Unit)? = null
     ) {
-        UserMessagingPlatform.loadAndShowConsentFormIfRequired(activity) { error ->
+        UserMessagingPlatform.loadAndShowConsentFormIfRequired(appCompatActivity) { error ->
             if (error != null) {
                 Logger.e("Consent Form Error: ${error.message}")
             }
@@ -38,16 +41,16 @@ object ConsentManager {
         }
     }
 
-    fun requestConsent(activity: Activity) {
-        val consentInformation = UserMessagingPlatform.getConsentInformation(activity)
+    fun requestConsent(appCompatActivity: AppCompatActivity) {
+        val consentInformation = UserMessagingPlatform.getConsentInformation(appCompatActivity)
 
         val params = ConsentRequestParameters.Builder().build()
         consentInformation.requestConsentInfoUpdate(
-            activity,
+            appCompatActivity,
             params,
             {
                 if (consentInformation.isConsentFormAvailable) {
-                    loadAndShowConsentForm(activity)
+                    loadAndShowConsentForm(appCompatActivity)
                 }
             },
             { error ->

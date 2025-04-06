@@ -1,7 +1,7 @@
 package ir.ayantech.ayanadmanager.core
 
-import android.app.Activity
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import ir.ayantech.ayanadmanager.core.AyanAdManager.appMarket
 import ir.ayantech.ayanadmanager.model.AdRequestConfigBuilder
 import ir.ayantech.ayanadmanager.model.api.AdUnit
@@ -13,7 +13,7 @@ import ir.ayantech.ayanadmanager.utils.AdSizeType
 import ir.ayantech.ayanadmanager.utils.ContainerType
 import ir.ayantech.ayanadmanager.utils.Logger
 import ir.ayantech.ayanadmanager.utils.constant.AdSource
-import ir.ayantech.ayanadmanager.utils.constant.Config.Platform
+import ir.ayantech.ayanadmanager.utils.constant.Config.PLATFORM
 import ir.ayantech.ayanadmanager.utils.getAppVersion
 import ir.ayantech.ayanadmanager.utils.getOsVersion
 
@@ -25,7 +25,7 @@ class AdProviderManager {
      *
      * @param adUnits The list of available ad units.
      * @param callback The callback to handle ad loading events.
-     * @param activity The activity for ad operations.
+     * @param appCompatActivity, The activity for ad operations.
      * @param containerKey The key of containerAd.
      * @param viewGroup The view group to display the ad.
      * @param nativeAdAttributes Attributes like (textSize ,...) to customize DefaultNativeAd views.
@@ -36,7 +36,7 @@ class AdProviderManager {
         containerKey: String,
         adUnits: List<AdUnit>,
         callback: AdCallback,
-        activity: Activity,
+        appCompatActivity: AppCompatActivity,
         viewGroup: ViewGroup? = null,
         nativeAdAttributes: NativeAdAttributes,
         useDefaultNativeAdView: Boolean,
@@ -48,7 +48,7 @@ class AdProviderManager {
             index = 0,
             containerType = adUnits.first().ContainerType,
             callback = callback,
-            activity = activity,
+            appCompatActivity = appCompatActivity,
             viewGroup = viewGroup,
             nativeAdAttributes = nativeAdAttributes,
             useDefaultNativeAdView = useDefaultNativeAdView,
@@ -65,7 +65,7 @@ class AdProviderManager {
         index: Int,
         containerType: ContainerType,
         callback: AdCallback,
-        activity: Activity,
+        appCompatActivity: AppCompatActivity,
         viewGroup: ViewGroup?,
         nativeAdAttributes: NativeAdAttributes,
         useDefaultNativeAdView: Boolean,
@@ -83,9 +83,9 @@ class AdProviderManager {
                 AdSource = it.AdSource.name,
                 AdUnitId = it.AdUnitId,
                 AppMarket = appMarket.value,
-                AppVersion = getAppVersion(activity),
+                AppVersion = getAppVersion(appCompatActivity),
                 FailureCause = null,
-                OsName = Platform,
+                OsName = PLATFORM,
                 OsVersion = getOsVersion()
             )
 
@@ -114,7 +114,7 @@ class AdProviderManager {
                         index = index + 1,
                         containerType = containerType,
                         callback = callback,
-                        activity = activity,
+                        appCompatActivity = appCompatActivity,
                         viewGroup = viewGroup,
                         nativeAdAttributes = nativeAdAttributes,
                         useDefaultNativeAdView = useDefaultNativeAdView,
@@ -124,7 +124,7 @@ class AdProviderManager {
             }
 
             val adConfig =
-                AdRequestConfigBuilder(containerType, activity, addStatistics, callbackObj).apply {
+                AdRequestConfigBuilder(containerType, appCompatActivity, addStatistics, callbackObj).apply {
                     when (it.AdSource) {
                         AdSource.AdMob -> setAdMobConfig(
                             it.AdUnitId,

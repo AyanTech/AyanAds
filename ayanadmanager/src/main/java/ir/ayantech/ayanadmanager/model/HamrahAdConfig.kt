@@ -1,8 +1,8 @@
 package ir.ayantech.ayanadmanager.model
 
-import android.app.Activity
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import ir.ayantech.ayanadmanager.core.AdCallback
 import ir.ayantech.ayanadmanager.model.api.AddStatisticsInputParameters
 import ir.ayantech.ayanadmanager.networks.hamrahAds.components.NativeAdAttributes
@@ -16,10 +16,10 @@ data class HamrahAdConfig(
     val nativeAdAttributes: NativeAdAttributes,
     val useDefaultNativeAdView: Boolean,
     val containerType: ContainerType,
-    val activity: Activity,
+    val appCompatActivity: AppCompatActivity,
     val addStatisticsInput: AddStatisticsInputParameters,
     val callback: AdCallback
-) : AdRequestConfig(containerType, activity, addStatisticsInput, callback) {
+) : AdRequestConfig(containerType, appCompatActivity, addStatisticsInput, callback) {
 
     fun getAdSize(): HamrahAdsBannerType {
         return when (adSize) {

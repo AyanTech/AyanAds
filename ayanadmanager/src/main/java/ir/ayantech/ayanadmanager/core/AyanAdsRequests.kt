@@ -10,13 +10,13 @@ import ir.ayantech.ayanadmanager.model.api.GetConfigOutputParameters
 import ir.ayantech.ayanadmanager.model.api.TrackStatisticsInputParameters
 import ir.ayantech.ayanadmanager.model.api.TrackStatisticsOutputParameters
 import ir.ayantech.ayanadmanager.utils.Logger
-import ir.ayantech.ayanadmanager.utils.constant.Config.AppKeyHeader
+import ir.ayantech.ayanadmanager.utils.constant.Config.APP_KEY_HEADER
 import ir.ayantech.ayanadmanager.utils.constant.EndPoint
 
 
 fun getConfig(appKey: String, success: (GetConfigOutputParameters?) -> Unit) {
     ayanAdApi.call<GetConfigOutputParameters>(
-        endPoint = EndPoint.getConfigs,
+        endPoint = EndPoint.GET_CONFIG,
         input = GetConfigInputParameters(appKey),
     ) {
         success { res ->
@@ -31,9 +31,9 @@ fun getConfig(appKey: String, success: (GetConfigOutputParameters?) -> Unit) {
 
 fun sendStatistics(input: AddStatisticsInputParameters) {
     ayanAdApi.apply {
-        headers = hashMapOf(AppKeyHeader to appKey)
+        headers = hashMapOf(APP_KEY_HEADER to appKey)
         call<AddStatisticsOutPutParameters>(
-            endPoint = EndPoint.addStatistics,
+            endPoint = EndPoint.ADD_STATISTICS,
             input = input,
         ) {
             success {
@@ -49,9 +49,9 @@ fun sendStatistics(input: AddStatisticsInputParameters) {
 
 fun submitClick() {
     ayanAdApi.apply {
-        headers = hashMapOf(AppKeyHeader to appKey)
+        headers = hashMapOf(APP_KEY_HEADER to appKey)
         call<TrackStatisticsOutputParameters>(
-            endPoint = EndPoint.trackStatistics,
+            endPoint = EndPoint.TRACK_STATISTICS,
             input = TrackStatisticsInputParameters(clickTracker),
         ) {
             success {
