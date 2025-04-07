@@ -47,7 +47,7 @@ class MyApp : Application() {
         super.onCreate()
 
         AyanAdManager.initialize(
-            context = this,
+            appCompatActivity = this,
             appMarket = "YOUR_APP_MARKET",
             appKey = "YOUR_APP_KEY",
             onSuccess = { Logger.d("AyanAdManager initialized successfully.") },
@@ -62,7 +62,7 @@ To display an ad, use the following example:
 AyanAdManager.showAd(
     useDefaultNativeAdView = true,
     containerKey = "CONTAINER_KEY",
-    activity = this,
+    appCompatActivity = this,
     adSize = BannerAdSize.SMALL, // Required for banner ad [SMALL, MEDIUM, LARGE]
     adContainerId = findViewById(R.id.view)
 )
@@ -78,7 +78,7 @@ When displaying native ads, you can configure the behavior based on whether you 
    AyanAdManager.showAd(
        useDefaultNativeAdView = true,
        containerKey = "CONTAINER_KEY",
-       context = this,
+       appCompatActivity = this,
        adContainerId = findViewById(R.id.view)
    )
    ```
@@ -90,7 +90,7 @@ When displaying native ads, you can configure the behavior based on whether you 
    AyanAdManager.showAd(
        useDefaultNativeAdView = true,
        containerKey = "CONTAINER_KEY",
-       context = this,
+       appCompatActivity = this,
        adContainerId = findViewById(R.id.view),
        nativeAdAttributes = NativeAdAttributes(
            titleColor = ContextCompat.getColor(this, R.color.black),
@@ -107,7 +107,7 @@ When displaying native ads, you can configure the behavior based on whether you 
    AyanAdManager.showAd(
        useDefaultNativeAdView = false,
        containerKey = "CONTAINER_KEY",
-       context = this,
+       appCompatActivity = this,
        adContainerId = findViewById(R.id.view)
    )
 ```
