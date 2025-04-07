@@ -30,7 +30,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         AyanAdManager.initialize(
-            activity = this,
+            appCompatActivity = this,
             appKey = appKey,
             appMarket = AppMarket.CafeBazaar
         )
@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.ad1).setOnClickListener {
             AyanAdManager.showAd(
                 containerKey = hamrahAdBannerContainerKey,
-                activity = this,
+                appCompatActivity = this,
                 adContainerId = findViewById(R.id.banner),
                 adSize = null,
                 adCallback = object : AdCallback {
@@ -62,7 +62,7 @@ class MainActivity : AppCompatActivity() {
             AyanAdManager.showAd(
                 useDefaultNativeAdView = true,
                 containerKey = admobNativeContainerKey,
-                activity = this,
+                appCompatActivity = this,
                 adContainerId = findViewById(R.id.nativeAdMob),
                 nativeAdAttributes = NativeAdAttributes(
                     titleColor = ContextCompat.getColor(
@@ -94,7 +94,7 @@ class MainActivity : AppCompatActivity() {
             AyanAdManager.showAd(
                 useDefaultNativeAdView = false,
                 containerKey = admobNativeContainerKey,
-                activity = this,
+                appCompatActivity = this,
                 adContainerId = findViewById(R.id.nativeAdMob),
                 adSize = null,
 
