@@ -12,18 +12,24 @@ import ir.ayantech.ayanadmanager.model.api.TrackStatisticsOutputParameters
 import ir.ayantech.ayanadmanager.utils.Logger
 import ir.ayantech.ayanadmanager.utils.constant.Config.APP_KEY_HEADER
 import ir.ayantech.ayanadmanager.utils.constant.EndPoint
+import ir.ayantech.ayannetworking.ayanModel.Failure
 
 
-fun getConfig(appKey: String, success: (GetConfigOutputParameters?) -> Unit) {
+fun getConfig(
+    appKey: String,
+    onSuccess: (GetConfigOutputParameters?) -> Unit,
+    onFailed: (Failure) -> Unit
+) {
     ayanAdApi.call<GetConfigOutputParameters>(
         endPoint = EndPoint.GET_CONFIG,
         input = GetConfigInputParameters(appKey),
     ) {
         success { res ->
             Logger.d("getConfig: $res")
-            success.invoke(res)
+            onSuccess.invoke(res)
         }
         failure {
+            onFailed.invoke(it)
             Logger.e("getConfig: ${it.failureMessage}")
         }
     }
