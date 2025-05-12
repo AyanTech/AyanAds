@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity() {
         AyanAdManager.initialize(
             appCompatActivity = this,
             appKey = appKey,
-            appMarket = AppMarket.CafeBazaar
+            appMarket = AppMarket.XiaomiStore
         )
 
         findViewById<Button>(R.id.ad1).setOnClickListener {
