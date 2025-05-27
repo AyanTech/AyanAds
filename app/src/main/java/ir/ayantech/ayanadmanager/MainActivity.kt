@@ -16,7 +16,7 @@ import ir.ayantech.ayanadmanager.networks.hamrahAds.components.NativeAdAttribute
 import ir.ayantech.ayanadmanager.utils.constant.AppMarket
 
 class MainActivity : AppCompatActivity() {
-    val appKey = "0d2d289e1f0c76143af11bab6fb60881099983743e223d9e8b4cbd06a84c07d7"
+    val appKey = "2a886212e7bdbb444a05a1649b2aa67f6aa0c1766410b9049fe83ad14c5392d1"
 
     val hamrahAdNativeContainerKey = "e60e4754-9b02-4af2-ab70-303afb873729"
     val hamrahAdBannerContainerKey = "1602e211-75cc-4da9-90f4-0fcca27dfe3e"
