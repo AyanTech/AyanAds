@@ -113,23 +113,24 @@ When displaying native ads, you can configure the behavior based on whether you 
 ```
  Note: When using a custom native ad view, you must use the following specific view IDs in your layout to ensure the ad is displayed correctly:
 
-``` XML
-<item name="ad_title" type="id" />
-<item name="ad_media" type="id" />
-<item name="ad_price" type="id" />
-<item name="ad_store" type="id" />
-<item name="ad_cta" type="id" />
-<item name="ad_banner" type="id" />
-<item name="ad_stars" type="id" />
-<item name="ad_icon" type="id" />
-<item name="ad_description" type="id" />
-<item name="ad_cta_view" type="id" />
-```
+| ID Name         | View Type                                     |
+|-----------------|-----------------------------------------------|
+| `ad_title`      | `TextView`                                    |
+| `ad_media`      | `com.google.android.gms.ads.nativead.MediaView` |
+| `ad_price`      | `TextView`                                    |
+| `ad_store`      | `TextView`                                    |
+| `ad_cta`        | `Button`                                      |
+| `ad_banner`     | `ImageView`                                   |
+| `ad_stars`      | `RatingBar`                                   |
+| `ad_icon`       | `ImageView`                                   |
+| `ad_description`| `TextView`                                    |
+| `ad_cta_view`   | `Button`                                      |
+
 These IDs are required regardless of the ad type being displayed. They ensure that the SDK can properly bind the ad content to your custom view.
 
 
 ### Consent Management
-For Google Ads, it is necessary to obtain user consent for personalized advertising, especially for users in specific regions like the European Union (EU). The AyanAdManager SDK handles this automatically. However, if you need to manually request consent or display a consent dialog at a specific point in your app, you can use the ```ConsentManager.requestConsent()``` function.
+For Google Ads, it is necessary to obtain user consent for personalized advertising, especially for users in specific regions like the European Union (EU). The AyanAdManager SDK handles this automatically. However, if you must manually request consent or display a consent dialog at a specific point in your app, you can use the ```ConsentManager.requestConsent()``` function.
 
 
 ### Destroy Ad
