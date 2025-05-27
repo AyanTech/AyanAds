@@ -4,9 +4,9 @@ import ir.ayantech.ayanadmanager.utils.ContainerType
 import ir.ayantech.ayanadmanager.utils.constant.AdSource
 
 
-data class GetConfigApiInputParameters(val AppKey: String)
+data class GetConfigAdInputParameters(val AppKey: String)
 
-data class GetConfigApiOutputParameters(
+data class GetConfigAdOutputParameters(
     val Name: String,
     val AdSourcePriority: List<AdSourcePriority>,
     val AdUnits: List<AdUnit>

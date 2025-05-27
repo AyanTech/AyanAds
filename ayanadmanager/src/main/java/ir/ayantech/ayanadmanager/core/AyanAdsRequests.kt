@@ -5,8 +5,8 @@ import ir.ayantech.ayanadmanager.core.AyanAdManager.ayanAdApi
 import ir.ayantech.ayanadmanager.core.AyanAdManager.clickTracker
 import ir.ayantech.ayanadmanager.model.api.AddStatisticsInputParameters
 import ir.ayantech.ayanadmanager.model.api.AddStatisticsOutPutParameters
-import ir.ayantech.ayanadmanager.model.api.GetConfigApiInputParameters
-import ir.ayantech.ayanadmanager.model.api.GetConfigApiOutputParameters
+import ir.ayantech.ayanadmanager.model.api.GetConfigAdInputParameters
+import ir.ayantech.ayanadmanager.model.api.GetConfigAdOutputParameters
 import ir.ayantech.ayanadmanager.model.api.TrackStatisticsInputParameters
 import ir.ayantech.ayanadmanager.model.api.TrackStatisticsOutputParameters
 import ir.ayantech.ayanadmanager.utils.Logger
@@ -17,12 +17,12 @@ import ir.ayantech.ayannetworking.ayanModel.Failure
 
 fun getConfig(
     appKey: String,
-    onSuccess: (GetConfigApiOutputParameters?) -> Unit,
+    onSuccess: (GetConfigAdOutputParameters?) -> Unit,
     onFailed: (Failure) -> Unit
 ) {
-    ayanAdApi.call<GetConfigApiOutputParameters>(
+    ayanAdApi.call<GetConfigAdOutputParameters>(
         endPoint = EndPoint.GET_CONFIG,
-        input = GetConfigApiInputParameters(appKey),
+        input = GetConfigAdInputParameters(appKey),
     ) {
         success { res ->
             Logger.d("getConfig: $res")
