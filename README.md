@@ -128,6 +128,10 @@ When displaying native ads, you can configure the behavior based on whether you 
 
 These IDs are required regardless of the ad type being displayed. They ensure that the SDK can properly bind the ad content to your custom view.
 
+### **Custom Layout Requirements**
+When using a custom native ad view (`useDefaultNativeAdView = false`), **all layout containers** — including the parent and all nested views — must use **LinearLayout**.
+
+Avoid using **RelativeLayout**, **ConstraintLayout**, or any other layout types anywhere in the hierarchy. These layouts are not supported and may lead to rendering issues or SDK integration problems.
 
 ### Consent Management
 For Google Ads, it is necessary to obtain user consent for personalized advertising, especially for users in specific regions like the European Union (EU). The AyanAdManager SDK handles this automatically. However, if you must manually request consent or display a consent dialog at a specific point in your app, you can use the ```ConsentManager.requestConsent()``` function.
