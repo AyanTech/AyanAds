@@ -153,3 +153,21 @@ If you're using ProGuard, add the following rules to your ProGuard configuration
 -keep public class ir.ayantech.hamrahads.** { *; }
 -keep class ir.ayantech.ayanadmanager.model.api.** { *; }
 -keep class ir.ayantech.ayanadmanager.utils.constant.** { *; }
+```
+
+### **Logging**
+To view SDK logs in **Logcat**, filter logs using the following tag:
+
+**TAG:** `"AyanAdManager"`
+
+#### Example via ADB:
+```bash
+adb logcat -s AyanAdManager
+```
+
+#### In Android Studio:
+- Open the **Logcat** window  
+- Enter `AyanAdManager` in the search/filter box to isolate SDK logs
+
+This will help you monitor the SDK’s behavior, initialization process, and any errors or debug information provided during integration.
+
