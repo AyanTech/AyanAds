@@ -54,17 +54,19 @@ fun sendStatistics(input: AddStatisticsInputParameters) {
 }
 
 fun submitClick() {
-    ayanAdApi.apply {
-        headers = hashMapOf(APP_KEY_HEADER to appKey)
-        call<TrackStatisticsOutputParameters>(
-            endPoint = EndPoint.TRACK_STATISTICS,
-            input = TrackStatisticsInputParameters(clickTracker),
-        ) {
-            success {
-                Logger.d("submitClick: $it")
-            }
-            failure {
-                Logger.e("submitClick: ${it.failureMessage}")
+    if (clickTracker.isNotBlank()) {
+        ayanAdApi.apply {
+            headers = hashMapOf(APP_KEY_HEADER to appKey)
+            call<TrackStatisticsOutputParameters>(
+                endPoint = EndPoint.TRACK_STATISTICS,
+                input = TrackStatisticsInputParameters(clickTracker),
+            ) {
+                success {
+                    Logger.d("submitClick: $it")
+                }
+                failure {
+                    Logger.e("submitClick: ${it.failureMessage}")
+                }
             }
         }
     }
