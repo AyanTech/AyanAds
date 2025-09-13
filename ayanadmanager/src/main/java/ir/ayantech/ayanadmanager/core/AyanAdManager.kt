@@ -43,61 +43,62 @@ object AyanAdManager {
         onSuccess: SimpleCallBack = { Logger.d("Initialization successful.") },
         onError: StringCallBack = { Logger.e(it) }
     ) {
-        this.appKey = appKey
-        this.appMarket = appMarket
+        if (appKey.isNotBlank()) {
+            this.appKey = appKey
+            this.appMarket = appMarket
 
-        if (BuildConfig.DEBUG.not()) {
-            Logger.setDebugMode(false)
-        }
+            if (BuildConfig.DEBUG.not()) {
+                Logger.setDebugMode(false)
+            }
 
-        if (isInitialized) {
-            Logger.w("SDK is already initialized.")
-            return
-        }
+            if (isInitialized) {
+                Logger.w("SDK is already initialized.")
+                return
+            }
 
-        createAyanAdApi(appCompatActivity)
+            createAyanAdApi(appCompatActivity)
 
-        getConfig(
-            appKey = appKey,
-            onSuccess = { response ->
-                isInitialized = true
-                response?.let {
-                    it.AdSourcePriority.map { AdProviderPriority(it.AdSource, it.AppId) }
-                        .let { adProvidersPriority.addAll(it) }
-                    adManager = AdProviderManager()
-                    adUnits.addAll(it.AdUnits)
-                }
-                adProvidersPriority.forEach {
-                    when (it.adSource) {
-                        AdSource.HamrahAd -> {
-                            if (it.priority.isNullOrEmpty().not()) {
+            getConfig(
+                appKey = appKey,
+                onSuccess = { response ->
+                    isInitialized = true
+                    response?.let {
+                        it.AdSourcePriority.map { AdProviderPriority(it.AdSource, it.AppId) }
+                            .let { adProvidersPriority.addAll(it) }
+                        adManager = AdProviderManager()
+                        adUnits.addAll(it.AdUnits)
+                    }
+
+
+                    adProvidersPriority.forEach {
+                        if (it.appId.isNullOrEmpty()) {
+                            Logger.e("${it.adSource} is not initialize, appId is Not Valid.")
+                        }
+
+                        when (it.adSource) {
+                            AdSource.HamrahAd -> {
                                 initializeHamrahAds(
-                                    appCompatActivity,
-                                    it.priority,
+                                    appCompatActivity = appCompatActivity,
+                                    it.appId,
                                     onSuccess,
                                     onError
                                 )
-                            } else {
-                                isInitialized = false
-                                Logger.e("HamrahAd is not initialize, appID is not valid.")
-                                return@getConfig
                             }
-                        }
 
-                        AdSource.AdMob -> {
-                            if (it.priority.isNullOrEmpty().not()) {
+                            AdSource.AdMob -> {
                                 initializeMobileAds(appCompatActivity)
-                                isInitialized = false
-                                return@getConfig
                             }
                         }
                     }
+                },
+                onFailed = { failure ->
+                    isInitialized = false
+                    onError.invoke(failure.failureMessage)
                 }
-            },
-            onFailed = { failure ->
-                isInitialized = false
-            }
-        )
+            )
+        } else {
+            onError.invoke("appKey is Blank.")
+        }
     }
 
     private fun initializeMobileAds(appCompatActivity: AppCompatActivity) {
@@ -119,13 +120,13 @@ object AyanAdManager {
 
     private fun initializeHamrahAds(
         appCompatActivity: AppCompatActivity,
-        apiKey: String,
+        appId: String,
         onSuccess: SimpleCallBack,
         onError: StringCallBack
     ) {
         HamrahAds.Initializer()
             .setContext(appCompatActivity)
-            .initId(apiKey)
+            .initId(appId)
             .initListener(object : HamrahAdsInitListener {
                 override fun onSuccess() {
                     onSuccess.invoke()
