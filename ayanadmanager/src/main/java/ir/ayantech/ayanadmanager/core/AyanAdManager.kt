@@ -19,7 +19,7 @@ import ir.ayantech.ayannetworking.BuildConfig
 import ir.ayantech.ayannetworking.api.AyanApi
 import ir.ayantech.ayannetworking.ayanModel.LogLevel
 import ir.ayantech.hamrahads.HamrahAds
-import ir.ayantech.hamrahads.listener.HamrahAdsInitListener
+import ir.ayantech.hamrahads.listener.InitListener
 import ir.ayantech.hamrahads.network.model.NetworkError
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -68,20 +68,18 @@ object AyanAdManager {
                         adManager = AdProviderManager()
                         adUnits.addAll(it.AdUnits)
                     }
-
-
                     adProvidersPriority.forEach {
                         if (it.appId.isNullOrEmpty()) {
-                            Logger.e("${it.adSource} is not initialize, appId is Not Valid.")
+                            Logger.e("${it.adSource} appId is not valid.")
                         }
 
                         when (it.adSource) {
                             AdSource.HamrahAd -> {
                                 initializeHamrahAds(
                                     appCompatActivity = appCompatActivity,
-                                    it.appId,
-                                    onSuccess,
-                                    onError
+                                    appId = it.appId ?: "",
+                                    onSuccess = onSuccess,
+                                    onError = onError
                                 )
                             }
 
@@ -97,7 +95,7 @@ object AyanAdManager {
                 }
             )
         } else {
-            onError.invoke("appKey is Blank.")
+            onError.invoke("appKey is blank.")
         }
     }
 
@@ -127,7 +125,7 @@ object AyanAdManager {
         HamrahAds.Initializer()
             .setContext(appCompatActivity)
             .initId(appId)
-            .initListener(object : HamrahAdsInitListener {
+            .initListener(object : InitListener {
                 override fun onSuccess() {
                     onSuccess.invoke()
                 }
