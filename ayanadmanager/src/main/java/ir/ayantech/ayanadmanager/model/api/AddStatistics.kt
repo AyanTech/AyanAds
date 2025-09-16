@@ -1,6 +1,6 @@
 package ir.ayantech.ayanadmanager.model.api
 
-data class AddStatisticsOutPutParameters(val ClickTracker: String)
+data class AddStatisticsOutPutParameters(val ClickTracker: String?)
 data class AddStatisticsInputParameters(
     val ContainerKey: String?,
     val AdUnitId: String?,
