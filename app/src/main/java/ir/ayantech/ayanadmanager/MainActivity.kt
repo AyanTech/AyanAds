@@ -20,7 +20,7 @@ class MainActivity : AppCompatActivity() {
 
     val hamrahAdNativeContainerKey = "e60e4754-9b02-4af2-ab70-303afb873729"
     val hamrahAdBannerContainerKey = "1602e211-75cc-4da9-90f4-0fcca27dfe3e"
-    val hamrahAdInterstitialContainerKey = "ff9d1067-bce0-463d-8697-024c35003d5c"
+    val hamrahAdInterstitialContainerKey = "0d4e5387-ba9d-43d0-9209-231db4a9081a"
     val admobInterstitialContainerKey = "ff9d1067-bce0-463d-8697-024c35003d5c"
     val admobBannerContainerKey = "1602e211-75cc-4da9-90f4-0fcca27dfe3e"
     val admobNativeContainerKey = "e60e4754-9b02-4af2-ab70-303afb873729"
@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity() {
         AyanAdManager.initialize(
             appCompatActivity = this,
             appKey = appKey,
-            appMarket = AppMarket.XiaomiStore,
+            appMarket = AppMarket.CafeBazaar,
             onError = {
                 Log.d("TAG", "onError: $it")
             },
@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.ad1).setOnClickListener {
             AyanAdManager.showAd(
-                containerKey = admobBannerContainerKey,
+                containerKey = hamrahAdBannerContainerKey,
                 appCompatActivity = this,
                 adContainerId = findViewById(R.id.banner),
                 adSize = null,
@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity() {
 //            adProvider.destroy()
             AyanAdManager.showAd(
                 useDefaultNativeAdView = true,
-                containerKey = admobInterstitialContainerKey,
+                containerKey = hamrahAdInterstitialContainerKey,
                 appCompatActivity = this,
                 adContainerId = findViewById(R.id.nativeAdMob),
                 nativeAdAttributes = NativeAdAttributes(
@@ -99,11 +99,10 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.ad3).setOnClickListener {
             AyanAdManager.showAd(
                 useDefaultNativeAdView = false,
-                containerKey = admobNativeContainerKey,
+                containerKey = hamrahAdNativeContainerKey,
                 appCompatActivity = this,
                 adContainerId = findViewById(R.id.nativeAdMob),
                 adSize = null,
-
                 adCallback = object : AdCallback {
                     override fun onAdLoaded() {
                         Log.d("mjmjmj", "onAdLoaded: ")
