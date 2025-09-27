@@ -15,7 +15,6 @@ hamrahAds = "0.1.39"
 playServicesAds = "23.3.0"
 userMessagingPlatform = "3.2.0"
 
-
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -32,7 +31,6 @@ ayanNetworkGenerator = { module = "com.github.shadowalker77:generator", version.
 
 play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "playServicesAds" }
 user-messaging-platform = { module = "com.google.android.ump:user-messaging-platform", version.ref = "userMessagingPlatform" }
-
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

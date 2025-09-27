@@ -244,7 +244,7 @@ class HamrahAdProvider : AdProvider {
 
                 override fun onClick() {
                     super.onClick()
-                    submitClick()
+                    submitClick(adUnitId = statistics.AdUnitId)
                     callback.onAdClicked()
                 }
 
@@ -300,7 +300,7 @@ class HamrahAdProvider : AdProvider {
             override fun onClick() {
                 super.onClick()
                 callback.onAdClicked()
-                submitClick()
+                submitClick(adUnitId = statistics.AdUnitId)
             }
 
         }

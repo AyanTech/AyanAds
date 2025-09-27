@@ -119,7 +119,7 @@ class AdmobProvider : AdProvider {
 
                     override fun onAdClicked() {
                         super.onAdClicked()
-                        submitClick()
+                        submitClick(adUnitId = statistics.AdUnitId)
                         callback.onAdClicked()
                     }
 
@@ -159,7 +159,7 @@ class AdmobProvider : AdProvider {
                             override fun onAdClicked() {
                                 super.onAdClicked()
                                 callback.onAdClicked()
-                                submitClick()
+                                submitClick(adUnitId = statistics.AdUnitId)
                             }
 
                             override fun onAdDismissedFullScreenContent() {
@@ -190,8 +190,7 @@ class AdmobProvider : AdProvider {
             /** If this callback occurs after the activity is destroyed, must call
             destroy and return or you may get a memory leak. **/
 
-            var activityDestroyed = appCompatActivity.isDestroyed
-            if (activityDestroyed || appCompatActivity.isFinishing || appCompatActivity.isChangingConfigurations) {
+            if (appCompatActivity.isDestroyed || appCompatActivity.isFinishing || appCompatActivity.isChangingConfigurations) {
                 nativeAd.destroy()
                 return@forNativeAd
             }
@@ -199,7 +198,8 @@ class AdmobProvider : AdProvider {
             currentNativeAd = nativeAd
 
             if (useDefaultNativeView) {
-                val defaultNativeBinding = AdmobNativeLayoutBinding.inflate(appCompatActivity.layoutInflater)
+                val defaultNativeBinding =
+                    AdmobNativeLayoutBinding.inflate(appCompatActivity.layoutInflater)
                 populateDefaultNativeAdView(nativeAd, defaultNativeBinding, nativeAdAttributes)
                 viewGroup.removeAllViews()
                 viewGroup.addView(defaultNativeBinding.root)
@@ -218,7 +218,7 @@ class AdmobProvider : AdProvider {
             override fun onAdClicked() {
                 super.onAdClicked()
                 callback.onAdClicked()
-                submitClick()
+                submitClick(adUnitId = statistics.AdUnitId)
             }
 
             override fun onAdLoaded() {

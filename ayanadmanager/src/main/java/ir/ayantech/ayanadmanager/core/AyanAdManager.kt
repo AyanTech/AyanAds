@@ -30,7 +30,7 @@ object AyanAdManager {
     lateinit var adProvider: AdProvider
     lateinit var ayanAdApi: AyanApi
     private lateinit var adManager: AdProviderManager
-    var clickTracker = ""
+    var clickTrackers = mutableMapOf<String, String>()
     var appKey = ""
     private val adUnits = arrayListOf<AdUnit>()
     private val adProvidersPriority = arrayListOf<AdProviderPriority>()
@@ -192,4 +192,5 @@ object AyanAdManager {
     }
 
     fun isInitialized(): Boolean = isInitialized
+
 }
