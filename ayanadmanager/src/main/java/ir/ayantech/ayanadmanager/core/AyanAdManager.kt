@@ -164,7 +164,11 @@ object AyanAdManager {
                     useDefaultNativeAdView = useDefaultNativeAdView,
                     adSize = adSize
                 )
-            } ?: Logger.w("No ad found for containerKey: $containerKey")
+            } ?: run {
+            val message = "No ad found for containerKey: $containerKey"
+            Logger.w(message)
+            adCallback.onAdFailed(error = message)
+        }
 
     }
 
