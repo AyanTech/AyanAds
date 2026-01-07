@@ -11,9 +11,10 @@ activity = "1.10.1"
 constraintlayout = "2.2.1"
 ayanNetworking = "1.6.7"
 generator = "0.3.0"
-hamrahAds = "0.1.39"
+hamrahAds = "0.1.44"
 playServicesAds = "23.3.0"
 userMessagingPlatform = "3.2.0"
+ayanadmanager = "1.1.14-alpha01"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
