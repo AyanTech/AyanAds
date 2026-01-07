@@ -8,7 +8,7 @@ import ir.ayantech.ayanadmanager.model.api.AddStatisticsInputParameters
 import ir.ayantech.ayanadmanager.networks.hamrahAds.components.NativeAdAttributes
 import ir.ayantech.ayanadmanager.utils.AdSizeType
 import ir.ayantech.ayanadmanager.utils.ContainerType
-import ir.ayantech.hamrahads.domain.enums.HamrahAdsBannerType
+import ir.ayantech.hamrahads.model.enums.BannerSize
 
 data class HamrahAdConfig(
     val adSize: AdSizeType?,
@@ -21,12 +21,12 @@ data class HamrahAdConfig(
     val callback: AdCallback
 ) : AdRequestConfig(containerType, appCompatActivity, addStatisticsInput, callback) {
 
-    fun getAdSize(): HamrahAdsBannerType {
+    fun getAdSize(): BannerSize {
         return when (adSize) {
-            AdSizeType.SMALL -> HamrahAdsBannerType.BANNER_320x50
-            AdSizeType.MEDIUM -> HamrahAdsBannerType.BANNER_640x1136
-            AdSizeType.LARGE -> HamrahAdsBannerType.BANNER_1136x640
-            null -> HamrahAdsBannerType.BANNER_320x50
+            AdSizeType.SMALL -> BannerSize.BANNER_320x50
+            AdSizeType.MEDIUM -> BannerSize.BANNER_640x1136
+            AdSizeType.LARGE -> BannerSize.BANNER_1136x640
+            null -> BannerSize.BANNER_320x50
         }
     }
 

@@ -20,7 +20,7 @@ import ir.ayantech.ayannetworking.api.AyanApi
 import ir.ayantech.ayannetworking.ayanModel.LogLevel
 import ir.ayantech.hamrahads.HamrahAds
 import ir.ayantech.hamrahads.listener.InitListener
-import ir.ayantech.hamrahads.network.model.NetworkError
+import ir.ayantech.hamrahads.model.error.HamrahAdsError
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -130,7 +130,8 @@ object AyanAdManager {
                     onSuccess.invoke()
                 }
 
-                override fun onError(error: NetworkError) {
+                override fun onError(error: HamrahAdsError) {
+                    super.onError(error)
                     onError.invoke(
                         error.description ?: "Unknown error occurred while initializing HamrahAds."
                     )
