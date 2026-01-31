@@ -14,7 +14,7 @@ generator = "0.3.0"
 hamrahAds = "0.1.44"
 playServicesAds = "23.3.0"
 userMessagingPlatform = "3.2.0"
-ayanadmanager = "1.1.14-alpha01"
+ayanadmanager = "1.1.14-alpha02"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
