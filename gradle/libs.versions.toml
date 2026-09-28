@@ -1,6 +1,6 @@
 [versions]
-agp = "8.7.3"
-kotlin = "2.2.0"
+agp = "9.3.0"
+kotlin = "2.4.0"
 coreKtx = "1.16.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -17,6 +17,7 @@ userMessagingPlatform = "3.2.0"
 ayanadmanager = "1.1.14-alpha02"
 
 [libraries]
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -35,6 +36,5 @@ user-messaging-platform = { module = "com.google.android.ump:user-messaging-plat
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 

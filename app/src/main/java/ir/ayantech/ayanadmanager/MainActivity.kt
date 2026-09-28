@@ -1,5 +1,7 @@
 package ir.ayantech.ayanadmanager
 
+import ir.ayantech.ayanadmanager.sample.R
+
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
