@@ -7,5 +7,5 @@ data class AdProviderPriority(
     @SerializedName("adSource")
     val adSource: AdSource,
     @SerializedName("priority")
-    val priority: String?
+    val appId: String?
 )

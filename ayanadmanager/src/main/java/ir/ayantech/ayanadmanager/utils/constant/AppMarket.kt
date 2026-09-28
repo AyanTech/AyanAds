@@ -6,4 +6,5 @@ enum class AppMarket(val value: String) {
     Myket("myket"),
     GalaxyStore("galaxy store"),
     AppStore("app store"),
+    XiaomiStore("xiaomi store"),
 }

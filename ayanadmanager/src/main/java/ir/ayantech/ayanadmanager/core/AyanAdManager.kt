@@ -1,114 +1,137 @@
 package ir.ayantech.ayanadmanager.core
 
-import android.content.Context
 import android.view.ViewGroup
-import ir.ayantech.ayanadmanager.core.AyanAdManager.adUnits
+import androidx.appcompat.app.AppCompatActivity
+import com.google.android.gms.ads.MobileAds
 import ir.ayantech.ayanadmanager.model.api.AdProviderPriority
 import ir.ayantech.ayanadmanager.model.api.AdUnit
+import ir.ayantech.ayanadmanager.networks.admob.ConsentManager
 import ir.ayantech.ayanadmanager.networks.hamrahAds.components.NativeAdAttributes
-import ir.ayantech.ayanadmanager.utils.BannerAdSize
+import ir.ayantech.ayanadmanager.utils.AdSizeType
 import ir.ayantech.ayanadmanager.utils.Logger
 import ir.ayantech.ayanadmanager.utils.SimpleCallBack
 import ir.ayantech.ayanadmanager.utils.StringCallBack
 import ir.ayantech.ayanadmanager.utils.constant.AdSource
 import ir.ayantech.ayanadmanager.utils.constant.AppMarket
 import ir.ayantech.ayanadmanager.utils.constant.Config
-import ir.ayantech.ayanadmanager.utils.constant.Config.Timeout
+import ir.ayantech.ayanadmanager.utils.constant.Config.TIMEOUT
 import ir.ayantech.ayannetworking.BuildConfig
 import ir.ayantech.ayannetworking.api.AyanApi
 import ir.ayantech.ayannetworking.ayanModel.LogLevel
 import ir.ayantech.hamrahads.HamrahAds
-import ir.ayantech.hamrahads.domain.enums.HamrahAdsBannerType
-import ir.ayantech.hamrahads.listener.HamrahAdsInitListener
-import ir.ayantech.hamrahads.network.model.NetworkError
+import ir.ayantech.hamrahads.listener.InitListener
+import ir.ayantech.hamrahads.model.error.HamrahAdsError
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 object AyanAdManager {
     private var isInitialized = false
+    lateinit var adProvider: AdProvider
     lateinit var ayanAdApi: AyanApi
-    lateinit var adManager: AdProviderManager
-    var clickTracker = ""
+    private lateinit var adManager: AdProviderManager
+    var clickTrackers = mutableMapOf<String, String>()
     var appKey = ""
-    val adUnits = arrayListOf<AdUnit>()
-
-    val adProvidersPriority = arrayListOf<AdProviderPriority>()
+    private val adUnits = arrayListOf<AdUnit>()
+    private val adProvidersPriority = arrayListOf<AdProviderPriority>()
     lateinit var appMarket: AppMarket
 
     fun initialize(
-        context: Context,
+        appCompatActivity: AppCompatActivity,
         appKey: String,
         appMarket: AppMarket,
         onSuccess: SimpleCallBack = { Logger.d("Initialization successful.") },
         onError: StringCallBack = { Logger.e(it) }
     ) {
-        AyanAdManager.appKey = appKey
-        AyanAdManager.appMarket = appMarket
+        if (appKey.isNotBlank()) {
+            this.appKey = appKey
+            this.appMarket = appMarket
 
-//        if (!BuildConfig.DEBUG) {
-//            Logger.setDebugMode(false)
-//        }
-
-        if (isInitialized) {
-            Logger.w("SDK is already initialized.")
-            return
-        }
-
-        createAyanAdApi(context)
-
-        getConfig(appKey = appKey) { response ->
-
-            response?.let {
-                it.AdSourcePriority.map { AdProviderPriority(it.AdSource, it.AppId) }
-                    .let { adProvidersPriority.addAll(it) }
-                adManager = AdProviderManager()
-                adUnits.addAll(it.AdUnits)
+            if (BuildConfig.DEBUG.not()) {
+                Logger.setDebugMode(false)
             }
 
-            adProvidersPriority.forEach {
-                when (it.adSource) {
-                    AdSource.HamrahAd -> {
-                        if (it.priority.isNullOrEmpty().not()) {
-                            initializeHamrahAds(context, it.priority!!, onSuccess, onError)
-                        } else {
-                            isInitialized = false
-                            Logger.e("HamrahAd is not initialize, appID is not valid.")
-                            return@getConfig
+            if (isInitialized) {
+                Logger.w("SDK is already initialized.")
+                return
+            }
+
+            createAyanAdApi(appCompatActivity)
+
+            getConfig(
+                appKey = appKey,
+                onSuccess = { response ->
+                    isInitialized = true
+                    response?.let {
+                        it.AdSourcePriority.map { AdProviderPriority(it.AdSource, it.AppId) }
+                            .let { adProvidersPriority.addAll(it) }
+                        adManager = AdProviderManager()
+                        adUnits.addAll(it.AdUnits)
+                    }
+                    adProvidersPriority.forEach {
+                        if (it.appId.isNullOrEmpty()) {
+                            Logger.e("${it.adSource} appId is not valid.")
+                        }
+
+                        when (it.adSource) {
+                            AdSource.HamrahAd -> {
+                                initializeHamrahAds(
+                                    appCompatActivity = appCompatActivity,
+                                    appId = it.appId ?: "",
+                                    onSuccess = onSuccess,
+                                    onError = onError
+                                )
+                            }
+
+                            AdSource.AdMob -> {
+                                initializeMobileAds(appCompatActivity)
+                            }
                         }
                     }
-                    AdSource.Adivery -> {}
-                    AdSource.AdMob -> {}
-                    AdSource.Tapsell -> {}
+                },
+                onFailed = { failure ->
+                    isInitialized = false
+                    onError.invoke(failure.failureMessage)
                 }
-            }
+            )
+        } else {
+            onError.invoke("appKey is blank.")
         }
-
-        isInitialized = true
     }
 
-    private fun createAyanAdApi(context: Context) {
+    private fun initializeMobileAds(appCompatActivity: AppCompatActivity) {
+        CoroutineScope(Dispatchers.IO).launch {
+            MobileAds.initialize(appCompatActivity) {}
+            ConsentManager.initialize(appCompatActivity)
+        }
+    }
+
+    private fun createAyanAdApi(appCompatActivity: AppCompatActivity) {
         ayanAdApi = AyanApi(
-            context = context,
-            defaultBaseUrl = Config.AyanAdBaseUrl,
-            timeout = Timeout.toLong(),
+            context = appCompatActivity,
+            defaultBaseUrl = Config.AYAN_AD_BASE_URL,
+            timeout = TIMEOUT.toLong(),
             headers = hashMapOf("Accept-Language" to "fa"),
             logLevel = if (BuildConfig.DEBUG) LogLevel.LOG_ALL else LogLevel.DO_NOT_LOG
         )
     }
 
     private fun initializeHamrahAds(
-        context: Context,
-        apiKey: String,
+        appCompatActivity: AppCompatActivity,
+        appId: String,
         onSuccess: SimpleCallBack,
         onError: StringCallBack
     ) {
         HamrahAds.Initializer()
-            .setContext(context)
-            .initId(apiKey)
-            .initListener(object : HamrahAdsInitListener {
+            .setContext(appCompatActivity)
+            .initId(appId)
+            .initListener(object : InitListener {
                 override fun onSuccess() {
                     onSuccess.invoke()
                 }
 
-                override fun onError(error: NetworkError) {
+                override fun onError(error: HamrahAdsError) {
+                    super.onError(error)
                     onError.invoke(
                         error.description ?: "Unknown error occurred while initializing HamrahAds."
                     )
@@ -121,19 +144,13 @@ object AyanAdManager {
      */
     fun showAd(
         containerKey: String,
-        context: Context,
-        adSize: BannerAdSize?,
+        appCompatActivity: AppCompatActivity,
+        adSize: AdSizeType?,
         adContainerId: ViewGroup?,
         nativeAdAttributes: NativeAdAttributes = NativeAdAttributes(),
         useDefaultNativeAdView: Boolean = true,
+        adCallback: AdCallback
     ) {
-
-        val convertedAdSize: HamrahAdsBannerType? = when (adSize) {
-            BannerAdSize.BANNER_320x50 -> HamrahAdsBannerType.BANNER_320x50
-            BannerAdSize.BANNER_640x1136 -> HamrahAdsBannerType.BANNER_640x1136
-            BannerAdSize.BANNER_1136x640 -> HamrahAdsBannerType.BANNER_1136x640
-            null -> null
-        }
 
         adUnits.filter { it.ContainerKey == containerKey }
             .sortedByPriority(adProvidersPriority.map { it.adSource })
@@ -141,24 +158,34 @@ object AyanAdManager {
                 adManager.loadAndShowAd(
                     containerKey = containerKey,
                     adUnits = filteredAdUnits,
-                    callback = createAdCallBack(),
-                    context = context,
+                    callback = createAdCallBack(adCallback),
+                    appCompatActivity = appCompatActivity,
                     viewGroup = adContainerId,
                     nativeAdAttributes = nativeAdAttributes,
                     useDefaultNativeAdView = useDefaultNativeAdView,
-                    adSize = convertedAdSize
+                    adSize = adSize
                 )
-            } ?: Logger.w("No ad found for containerKey: $containerKey")
+            } ?: run {
+            val message = "No ad found for containerKey: $containerKey"
+            Logger.w(message)
+            adCallback.onAdFailed(error = message)
+        }
 
     }
 
-    private fun createAdCallBack() = object : AdCallback {
+    private fun createAdCallBack(adCallback: AdCallback) = object : AdCallback {
         override fun onAdLoaded() {
             Logger.d("Ad loaded successfully!")
+            adCallback.onAdLoaded()
+        }
+
+        override fun onAdClicked() {
+            adCallback.onAdClicked()
         }
 
         override fun onAdFailed(error: String) {
             Logger.e("Failed to load ad: $error")
+            adCallback.onAdFailed(error)
         }
     }
 
@@ -170,4 +197,5 @@ object AyanAdManager {
     }
 
     fun isInitialized(): Boolean = isInitialized
+
 }

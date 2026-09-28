@@ -1,63 +1,122 @@
 package ir.ayantech.ayanadmanager
 
-import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.toColorInt
+import ir.ayantech.ayanadmanager.core.AdCallback
+import ir.ayantech.ayanadmanager.core.AdProvider
 import ir.ayantech.ayanadmanager.core.AyanAdManager
+import ir.ayantech.ayanadmanager.core.AyanAdManager.adProvider
 import ir.ayantech.ayanadmanager.networks.hamrahAds.HamrahAdProvider
 import ir.ayantech.ayanadmanager.networks.hamrahAds.components.NativeAdAttributes
 import ir.ayantech.ayanadmanager.utils.constant.AppMarket
 
 class MainActivity : AppCompatActivity() {
-    val appKey = "c89ce51c1c6686ac560580b28aba0642b6fc639fa93d7543bf0833c5ca9c965c"
+    val appKey = "0d2d289e1f0c76143af11bab6fb60881099983743e223d9e8b4cbd06a84c07d7"
+
+    val hamrahAdNativeContainerKey = "e60e4754-9b02-4af2-ab70-303afb873729"
+    val hamrahAdBannerContainerKey = "1602e211-75cc-4da9-90f4-0fcca27dfe3e"
+    val hamrahAdInterstitialContainerKey = "0d4e5387-ba9d-43d0-9209-231db4a9081a"
+    val admobInterstitialContainerKey = "ff9d1067-bce0-463d-8697-024c35003d5c"
+    val admobBannerContainerKey = "1602e211-75cc-4da9-90f4-0fcca27dfe3e"
+    val admobNativeContainerKey = "e60e4754-9b02-4af2-ab70-303afb873729"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         AyanAdManager.initialize(
-            context = this,
+            appCompatActivity = this,
             appKey = appKey,
-            appMarket = AppMarket.CafeBazaar
+            appMarket = AppMarket.CafeBazaar,
+            onError = {
+                Log.d("TAG", "onError: $it")
+            },
+            onSuccess = {
+                Log.d("TAG", "onSuccess")
+            }
         )
 
-
         findViewById<Button>(R.id.ad1).setOnClickListener {
-
             AyanAdManager.showAd(
-                containerKey = "6ec7f088-4800-4fda-ac03-b7ec88e9a829",
-                context = this,
-                adContainerId = findViewById(R.id.nativeView),
+                containerKey = hamrahAdBannerContainerKey,
+                appCompatActivity = this,
+                adContainerId = findViewById(R.id.banner),
                 adSize = null,
+                adCallback = object : AdCallback {
+                    override fun onAdLoaded() {
+                        Log.d("mjmjmj", "onAdLoaded: ")
+                    }
+
+                    override fun onAdClicked() {
+                        Log.d("mjmjmj", "onAdClicked: ")
+                    }
+
+                    override fun onAdFailed(error: String) {
+                        Log.d("mjmjmj", "onAdFailed: $error ")
+                    }
+
+                }
             )
         }
         findViewById<Button>(R.id.ad2).setOnClickListener {
-            AyanAdManager.showAd(
-                containerKey = "fh652bn7u56nb",
-                context = this,
-                adContainerId = findViewById(R.id.banner),
-                adSize = null,
-            )
-        }
-        findViewById<Button>(R.id.ad3).setOnClickListener {
+//            adProvider.destroy()
             AyanAdManager.showAd(
                 useDefaultNativeAdView = true,
-                containerKey = "29a6cefce668",
-                context = this,
-                adContainerId = findViewById(R.id.banner),
-                adSize = null,
+                containerKey = hamrahAdInterstitialContainerKey,
+                appCompatActivity = this,
+                adContainerId = findViewById(R.id.nativeAdMob),
                 nativeAdAttributes = NativeAdAttributes(
                     titleColor = ContextCompat.getColor(
                         this,
                         R.color.black
                     ),
-                    buttonTextColor = Color.parseColor("#000000"),
-                    buttonBackgroundTint = Color.parseColor("#ffffff"),
+                    buttonTextColor = "#000000".toColorInt(),
+                    buttonBackgroundTint = "#ffffff".toColorInt(),
                     typeface = ResourcesCompat.getFont(this, R.font.medium)
-                )
+                ),
+                adSize = null,
+                adCallback = object : AdCallback {
+                    override fun onAdLoaded() {
+                        Log.d("mjmjmj", "onAdLoaded: ")
+                    }
+
+                    override fun onAdClicked() {
+                        Log.d("mjmjmj", "onAdClicked: ")
+                    }
+
+                    override fun onAdFailed(error: String) {
+                        Log.d("mjmjmj", "onAdFailed: $error ")
+                    }
+
+                }
+            )
+        }
+        findViewById<Button>(R.id.ad3).setOnClickListener {
+            AyanAdManager.showAd(
+                useDefaultNativeAdView = false,
+                containerKey = hamrahAdNativeContainerKey,
+                appCompatActivity = this,
+                adContainerId = findViewById(R.id.nativeAdMob),
+                adSize = null,
+                adCallback = object : AdCallback {
+                    override fun onAdLoaded() {
+                        Log.d("mjmjmj", "onAdLoaded: ")
+                    }
+
+                    override fun onAdClicked() {
+                        Log.d("mjmjmj", "onAdClicked: ")
+                    }
+
+                    override fun onAdFailed(error: String) {
+                        Log.d("mjmjmj", "onAdFailed: $error ")
+                    }
+
+                }
             )
         }
 
@@ -65,6 +124,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        HamrahAdProvider().destroy()
+
     }
 }

@@ -1,87 +1,108 @@
 package ir.ayantech.ayanadmanager.networks.hamrahAds
 
 import android.app.Activity
-import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import ir.ayantech.ayanadmanager.R
 import ir.ayantech.ayanadmanager.core.AdCallback
 import ir.ayantech.ayanadmanager.core.AdProvider
 import ir.ayantech.ayanadmanager.core.sendStatistics
 import ir.ayantech.ayanadmanager.core.submitClick
 import ir.ayantech.ayanadmanager.databinding.NativeLayoutBinding
+import ir.ayantech.ayanadmanager.model.AdRequestConfig
+import ir.ayantech.ayanadmanager.model.HamrahAdConfig
 import ir.ayantech.ayanadmanager.model.api.AddStatisticsInputParameters
 import ir.ayantech.ayanadmanager.networks.hamrahAds.components.NativeAdAttributes
 import ir.ayantech.ayanadmanager.networks.hamrahAds.components.init
 import ir.ayantech.ayanadmanager.utils.ContainerType
+import ir.ayantech.ayanadmanager.utils.trying
 import ir.ayantech.hamrahads.HamrahAds
-import ir.ayantech.hamrahads.core.RequestBannerAds
-import ir.ayantech.hamrahads.core.RequestInterstitialAds
-import ir.ayantech.hamrahads.core.RequestNativeAds
-import ir.ayantech.hamrahads.core.ShowBannerAds
-import ir.ayantech.hamrahads.core.ShowInterstitialAds
-import ir.ayantech.hamrahads.core.ShowNativeAds
-import ir.ayantech.hamrahads.domain.enums.HamrahAdsBannerType
-import ir.ayantech.hamrahads.listener.HamrahAdsInitListener
-import ir.ayantech.hamrahads.network.model.NetworkError
+import ir.ayantech.hamrahads.ads.banner.BannerAdLoader
+import ir.ayantech.hamrahads.ads.banner.BannerAdView
+import ir.ayantech.hamrahads.ads.interstitial.InterstitialAdLoader
+import ir.ayantech.hamrahads.ads.interstitial.InterstitialAdView
+import ir.ayantech.hamrahads.ads.native.NativeAdLoader
+import ir.ayantech.hamrahads.ads.native.NativeAdView
+import ir.ayantech.hamrahads.listener.RequestListener
+import ir.ayantech.hamrahads.listener.ShowListener
+import ir.ayantech.hamrahads.model.enums.BannerSize
+import ir.ayantech.hamrahads.model.error.HamrahAdsError
 
 class HamrahAdProvider : AdProvider {
 
-    private var showBannerAds: ShowBannerAds? = null
-    private var requestBanner: RequestBannerAds? = null
+    private var showBannerAds: BannerAdView? = null
+    private var requestBanner: BannerAdLoader? = null
 
-    private var showInterstitialAds: ShowInterstitialAds? = null
-    private var requestInterstitial: RequestInterstitialAds? = null
+    private var showInterstitialAds: InterstitialAdView? = null
+    private var requestInterstitial: InterstitialAdLoader? = null
 
-    private var showNativeAds: ShowNativeAds? = null
-    private var requestNative: RequestNativeAds? = null
+    private var showNativeAds: NativeAdView? = null
+    private var requestNative: NativeAdLoader? = null
 
-    override fun loadAd(
-        containerType: ContainerType,
-        context: Context,
-        addStatisticsInput: AddStatisticsInputParameters,
-        viewGroup: ViewGroup?,
-        adSize: HamrahAdsBannerType?,
-        nativeAdAttributes: NativeAdAttributes,
-        useDefaultNativeAdView: Boolean,
-        callback: AdCallback
-    ) {
-        if (addStatisticsInput.AdUnitId.isNullOrEmpty()) {
-            callback.onAdFailed("AdUnitId cannot be empty")
-            return
+    private val idMapping = mapOf(
+        R.id.ad_title to R.id.hamrah_ad_native_title,
+        R.id.ad_description to R.id.hamrah_ad_native_description,
+        R.id.ad_banner to R.id.hamrah_ad_native_banner,
+        R.id.ad_icon to R.id.hamrah_ad_native_logo,
+        R.id.ad_cta_view to R.id.hamrah_ad_native_cta_view,
+        R.id.ad_cta to R.id.hamrah_ad_native_cta
+    )
+
+    override fun loadAd(config: AdRequestConfig) {
+
+        (config as? HamrahAdConfig)?.apply {
+            if (addStatisticsInput.AdUnitId.isNullOrEmpty()) {
+                callback.onAdFailed("AdUnitId cannot be empty")
+                return
+            }
+
+            when (containerType) {
+                ContainerType.Banner -> showBannerAd(
+                    appCompatActivity = appCompatActivity,
+                    viewGroup = viewGroup,
+                    adSize = getAdSize(),
+                    statistics = addStatisticsInput,
+                    callback = callback
+                )
+
+                ContainerType.Interstitial -> showInterstitialAd(
+                    appCompatActivity = appCompatActivity,
+                    statistics = addStatisticsInput,
+                    callback = callback
+                )
+
+                ContainerType.Native -> showNativeAd(
+                    appCompatActivity = appCompatActivity,
+                    viewGroup = viewGroup,
+                    statistics = addStatisticsInput,
+                    nativeAdAttributes = nativeAdAttributes,
+                    useDefaultNativeAdView = useDefaultNativeAdView,
+                    callback = callback
+                )
+            }
         }
 
-        when (containerType) {
-            ContainerType.Banner -> showBannerAd(
-                context = context,
-                viewGroup = viewGroup,
-                adSize = adSize,
-                statistics = addStatisticsInput,
-                callback = callback
-            )
+    }
 
-            ContainerType.Interstitial -> showInterstitialAd(
-                context = context,
-                statistics = addStatisticsInput,
-                callback = callback
-            )
-            ContainerType.Native -> showNativeAd(
-                context = context,
-                viewGroup = viewGroup,
-                statistics = addStatisticsInput,
-                nativeAdAttributes = nativeAdAttributes,
-                useDefaultNativeAdView = useDefaultNativeAdView,
-                callback = callback
-            )
+    fun updateViewIds(viewGroup: ViewGroup, idMapping: Map<Int, Int>) {
+        for (i in 0 until viewGroup.childCount) {
+            val child = viewGroup.getChildAt(i)
+            idMapping[child.id]?.let { newId ->
+                child.id = newId
+            }
+            if (child is ViewGroup) {
+                updateViewIds(child, idMapping)
+            }
         }
     }
 
     private fun showBannerAd(
-        context: Context,
+        appCompatActivity: AppCompatActivity,
         viewGroup: ViewGroup?,
-        adSize: HamrahAdsBannerType?,
+        adSize: BannerSize?,
         statistics: AddStatisticsInputParameters,
         callback: AdCallback
     ) {
@@ -89,16 +110,24 @@ class HamrahAdProvider : AdProvider {
 
         viewGroup?.let { vg ->
             requestBanner = HamrahAds.RequestBannerAds()
-                .setContext(context)
-                .initId(statistics.AdUnitId!!)
-                .initListener(object : HamrahAdsInitListener {
+                .setContext(appCompatActivity)
+                .initId(statistics.AdUnitId.orEmpty())
+                .initListener(object : RequestListener {
                     override fun onSuccess() {
                         showBannerAds =
-                            createShowBannerAds(context, viewGroup, adSize, statistics, callback)
+                            createShowBannerAds(
+                                appCompatActivity,
+                                viewGroup,
+                                adSize,
+                                statistics,
+                                callback
+                            )
                     }
 
-                    override fun onError(error: NetworkError) {
-                        handleAdError(error, callback, statistics)
+                    override fun onError(error: HamrahAdsError) {
+                            handleAdError(
+                                error, callback, statistics
+                            )
                     }
                 }).build()
         } ?: callback.onAdFailed("ViewGroup is null")
@@ -106,28 +135,29 @@ class HamrahAdProvider : AdProvider {
     }
 
     private fun showInterstitialAd(
-        context: Context,
+        appCompatActivity: AppCompatActivity,
         statistics: AddStatisticsInputParameters,
         callback: AdCallback
     ) {
         destroyInterstitialAdIfExist()
 
         requestInterstitial = HamrahAds.RequestInterstitialAds()
-            .setContext(context)
-            .initId(statistics.AdUnitId!!)
-            .initListener(object : HamrahAdsInitListener {
+            .setContext(appCompatActivity)
+            .initId(statistics.AdUnitId ?: "")
+            .initListener(requestListener = object : RequestListener {
                 override fun onSuccess() {
-                    showInterstitialAds = createShowInterstitialAd(context, callback, statistics)
+                    showInterstitialAds =
+                        createShowInterstitialAd(appCompatActivity, callback, statistics)
                 }
 
-                override fun onError(error: NetworkError) {
+                override fun onError(error: HamrahAdsError) {
                     handleAdError(error, callback, statistics)
                 }
             }).build()
     }
 
     private fun showNativeAd(
-        context: Context,
+        appCompatActivity: AppCompatActivity,
         viewGroup: ViewGroup?,
         statistics: AddStatisticsInputParameters,
         nativeAdAttributes: NativeAdAttributes,
@@ -138,19 +168,23 @@ class HamrahAdProvider : AdProvider {
 
         viewGroup?.let {
 
-            if (useDefaultNativeAdView) bindingDefaultView(viewGroup, context, nativeAdAttributes)
+            if (useDefaultNativeAdView) bindingDefaultView(
+                viewGroup,
+                appCompatActivity,
+                nativeAdAttributes
+            ) else updateViewIds(viewGroup, idMapping)
 
             requestNative = HamrahAds.RequestNativeAds()
-                .setContext(context)
-                .initId(statistics.AdUnitId!!)
-                .initListener(object : HamrahAdsInitListener {
+                .setContext(appCompatActivity)
+                .initId(statistics.AdUnitId ?: "")
+                .initListener(requestListener = object : RequestListener {
                     override fun onSuccess() {
                         showNativeAds =
-                            createShowNativeAd(context, callback, viewGroup, statistics)
+                            createShowNativeAd(appCompatActivity, callback, viewGroup, statistics)
                     }
 
-                    override fun onError(error: NetworkError) {
-                        handleAdError(error, callback, statistics)
+                    override fun onError(error: HamrahAdsError) {
+                       handleAdError(error, callback, statistics)
                     }
                 }).build()
         } ?: callback.onAdFailed("ViewGroup is null")
@@ -159,65 +193,77 @@ class HamrahAdProvider : AdProvider {
 
     private fun bindingDefaultView(
         viewGroup: ViewGroup,
-        context: Context,
+        appCompatActivity: AppCompatActivity,
         nativeAdAttributes: NativeAdAttributes
     ) {
-
         Handler(Looper.getMainLooper()).post {
-            val inflater = LayoutInflater.from(context)
+            val inflater = LayoutInflater.from(appCompatActivity)
             val binding = NativeLayoutBinding.inflate(inflater)
             binding.init(nativeAdAttributes)
-            viewGroup.addView(binding.root)
+            viewGroup.apply {
+                removeAllViews()
+                addView(binding.root, 0)
+            }
         }
     }
 
     private fun createShowNativeAd(
-        context: Context,
+        appCompatActivity: AppCompatActivity,
         callback: AdCallback,
         viewGroup: ViewGroup,
         statistics: AddStatisticsInputParameters
-    ): ShowNativeAds? {
+    ): NativeAdView? {
         return HamrahAds.ShowNativeAds()
             .setViewGroup(viewGroup)
-            .setContext(context as AppCompatActivity)
+            .initId(statistics.AdUnitId ?: "")
+            .setContext(appCompatActivity)
             .initListener(createAdListener(callback, statistics)).build()
     }
 
     private fun createShowBannerAds(
-        context: Context,
+        appCompatActivity: AppCompatActivity,
         viewGroup: ViewGroup,
-        adSize: HamrahAdsBannerType?,
+        adSize: BannerSize?,
         statistics: AddStatisticsInputParameters,
         callback: AdCallback
-    ): ShowBannerAds? {
+    ): BannerAdView? {
         return HamrahAds.ShowBannerAds()
-            .setContext(context as Activity)
+            .setContext(appCompatActivity)
             .setViewGroup(viewGroup)
-            .setSize(adSize ?: HamrahAdsBannerType.BANNER_320x50)
-            .initListener(object : HamrahAdsInitListener {
-                override fun onSuccess() {
+            .initId(statistics.AdUnitId ?: "")
+            .setSize(adSize ?: BannerSize.BANNER_320x50)
+            .initListener(showListener = object : ShowListener {
+
+                override fun onLoaded() {
+                    super.onLoaded()
                     callback.onAdLoaded()
+                }
+
+                override fun onDisplayed() {
+                    super.onDisplayed()
                     sendStatistics(input = statistics)
                 }
 
                 override fun onClick() {
                     super.onClick()
-                    submitClick()
+                    submitClick(adUnitId = statistics.AdUnitId)
+                    callback.onAdClicked()
                 }
 
-                override fun onError(error: NetworkError) {
+                override fun onError(error: HamrahAdsError) {
                     handleAdError(error, callback, statistics)
                 }
             }).build()
     }
 
     private fun createShowInterstitialAd(
-        context: Context,
+        activity: Activity,
         callback: AdCallback,
         statistics: AddStatisticsInputParameters
-    ): ShowInterstitialAds? {
+    ): InterstitialAdView? {
         return HamrahAds.ShowInterstitialAds()
-            .setContext(context as AppCompatActivity)
+            .setContext(activity as AppCompatActivity)
+            .initId(statistics.AdUnitId.orEmpty())
             .initListener(
                 createAdListener(
                     callback = callback,
@@ -227,7 +273,7 @@ class HamrahAdProvider : AdProvider {
     }
 
     private fun handleAdError(
-        error: NetworkError,
+        error: HamrahAdsError,
         callback: AdCallback,
         statistics: AddStatisticsInputParameters
     ) {
@@ -237,19 +283,26 @@ class HamrahAdProvider : AdProvider {
     }
 
     private fun createAdListener(callback: AdCallback, statistics: AddStatisticsInputParameters) =
-        object : HamrahAdsInitListener {
-            override fun onSuccess() {
+        object : ShowListener {
+
+            override fun onLoaded() {
                 callback.onAdLoaded()
+                super.onLoaded()
+            }
+
+            override fun onDisplayed() {
+                super.onDisplayed()
                 sendStatistics(statistics)
             }
 
-            override fun onError(error: NetworkError) {
+            override fun onError(error: HamrahAdsError) {
                 handleAdError(error, callback, statistics)
             }
 
             override fun onClick() {
                 super.onClick()
-                submitClick()
+                callback.onAdClicked()
+                submitClick(adUnitId = statistics.AdUnitId)
             }
 
         }
@@ -270,8 +323,10 @@ class HamrahAdProvider : AdProvider {
     }
 
     override fun destroy() {
-        destroyBannerAdIfExist()
-        destroyInterstitialAdIfExist()
-        destroyNativeAdIfExist()
+        trying {
+            destroyBannerAdIfExist()
+            destroyInterstitialAdIfExist()
+            destroyNativeAdIfExist()
+        }
     }
 }

@@ -2,59 +2,87 @@ package ir.ayantech.ayanadmanager.core
 
 import ir.ayantech.ayanadmanager.core.AyanAdManager.appKey
 import ir.ayantech.ayanadmanager.core.AyanAdManager.ayanAdApi
-import ir.ayantech.ayanadmanager.core.AyanAdManager.clickTracker
+import ir.ayantech.ayanadmanager.core.AyanAdManager.clickTrackers
 import ir.ayantech.ayanadmanager.model.api.AddStatisticsInputParameters
 import ir.ayantech.ayanadmanager.model.api.AddStatisticsOutPutParameters
-import ir.ayantech.ayanadmanager.model.api.GetConfigInputParameters
-import ir.ayantech.ayanadmanager.model.api.GetConfigOutputParameters
+import ir.ayantech.ayanadmanager.model.api.GetConfigAdInputParameters
+import ir.ayantech.ayanadmanager.model.api.GetConfigAdOutputParameters
 import ir.ayantech.ayanadmanager.model.api.TrackStatisticsInputParameters
 import ir.ayantech.ayanadmanager.model.api.TrackStatisticsOutputParameters
 import ir.ayantech.ayanadmanager.utils.Logger
-import ir.ayantech.ayanadmanager.utils.constant.Config.AppKeyHeader
+import ir.ayantech.ayanadmanager.utils.constant.Config.APP_KEY_HEADER
 import ir.ayantech.ayanadmanager.utils.constant.EndPoint
+import ir.ayantech.ayannetworking.ayanModel.Failure
 
 
-fun getConfig(appKey: String, success: (GetConfigOutputParameters?) -> Unit) {
-    ayanAdApi.call<GetConfigOutputParameters>(
-        endPoint = EndPoint.getConfigs,
-        input = GetConfigInputParameters(appKey),
+fun getConfig(
+    appKey: String,
+    onSuccess: (GetConfigAdOutputParameters?) -> Unit,
+    onFailed: (Failure) -> Unit
+) {
+    ayanAdApi.call<GetConfigAdOutputParameters>(
+        endPoint = EndPoint.GET_CONFIG,
+        input = GetConfigAdInputParameters(appKey),
     ) {
         success { res ->
-            success.invoke(res)
+            onSuccess.invoke(res)
+            Logger.d("getConfig success: $res")
         }
         failure {
-            Logger.e("getConfig: ${it.failureMessage}")
+            onFailed.invoke(it)
+            Logger.e("getConfig failure: ${it.failureMessage}")
         }
     }
 }
 
 fun sendStatistics(input: AddStatisticsInputParameters) {
-    ayanAdApi.apply {
-        headers = hashMapOf(AppKeyHeader to appKey)
+
+    val adUnitId = input.AdUnitId?.takeIf { it.isNotBlank() }
+    with(ayanAdApi) {
+        headers = hashMapOf(APP_KEY_HEADER to appKey)
         call<AddStatisticsOutPutParameters>(
-            endPoint = EndPoint.addStatistics,
+            endPoint = EndPoint.ADD_STATISTICS,
             input = input,
         ) {
-            success {
-                clickTracker = it?.ClickTracker ?: ""
+            success { response ->
+                Logger.d("sendStatistics success: $response")
+
+                val clickTracker = response?.ClickTracker?.takeIf { it.isNotBlank() }
+
+                if (adUnitId != null && clickTracker != null) {
+                    clickTrackers[adUnitId] = clickTracker
+                } else {
+                    Logger.w(
+                        "sendStatistics: skip updating clickTracker (adUnitId=$adUnitId, tracker=${response?.ClickTracker})"
+                    )
+                }
             }
-            failure {
-                Logger.e("addStatistics: ${it.failureMessage}")
-            }
+            failure { err -> Logger.e("sendStatistics failure: ${err.failureMessage}") }
         }
     }
 }
 
-fun submitClick() {
-    ayanAdApi.apply {
-        headers = hashMapOf(AppKeyHeader to appKey)
+fun submitClick(adUnitId: String?) {
+
+    val tracker = adUnitId
+        ?.takeIf { it.isNotBlank() }
+        ?.let { id -> clickTrackers[id] }
+        ?.takeIf { it.isNotBlank() }
+
+    if (tracker == null) {
+        Logger.w("submitClick: skipped (null/blank adUnitId or missing/blank tracker)")
+        return
+    }
+
+    with(ayanAdApi) {
+        headers = hashMapOf(APP_KEY_HEADER to appKey)
         call<TrackStatisticsOutputParameters>(
-            endPoint = EndPoint.trackStatistics,
-            input = TrackStatisticsInputParameters(clickTracker),
+            endPoint = EndPoint.TRACK_STATISTICS,
+            input = TrackStatisticsInputParameters(tracker),
         ) {
-            failure {
-                Logger.e("submitClick: ${it.failureMessage}")
-            }
+            success { Logger.d("submitClick success: $it") }
+            failure { Logger.e("submitClick failure: ${it.failureMessage}") }
         }
     }
+
 }

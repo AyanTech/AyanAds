@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="nativeView" type="id" />
+    <item name="hamrah_ad_native_banner" type="id" />
+    <item name="hamrah_ad_native_cta" type="id" />
+    <item name="hamrah_ad_native_title" type="id" />
+    <item name="hamrah_ad_native_description" type="id" />
+    <item name="hamrah_ad_native_logo" type="id" />
+    <item name="hamrah_ad_native_cta_view" type="id" />
+
+    <item name="ad_title" type="id" />
+    <item name="ad_media" type="id" />
+    <item name="ad_price" type="id" />
+    <item name="ad_store" type="id" />
+    <item name="ad_cta" type="id" />
+    <item name="ad_banner" type="id" />
+    <item name="ad_stars" type="id" />
+    <item name="ad_icon" type="id" />
+    <item name="ad_description" type="id" />
+    <item name="ad_cta_view" type="id" />
+</resources>
