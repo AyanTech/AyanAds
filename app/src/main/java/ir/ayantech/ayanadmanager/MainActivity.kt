@@ -3,21 +3,24 @@ package ir.ayantech.ayanadmanager
 import ir.ayantech.ayanadmanager.sample.R
 
 import android.os.Bundle
+import android.widget.TextView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import ir.ayantech.ayanadmanager.ui.AdsDemoViewModel
+import kotlinx.coroutines.launch
 import android.util.Log
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.graphics.toColorInt
 import ir.ayantech.ayanadmanager.core.AdCallback
-import ir.ayantech.ayanadmanager.core.AdProvider
 import ir.ayantech.ayanadmanager.core.AyanAdManager
-import ir.ayantech.ayanadmanager.core.AyanAdManager.adProvider
-import ir.ayantech.ayanadmanager.networks.hamrahAds.HamrahAdProvider
 import ir.ayantech.ayanadmanager.networks.hamrahAds.components.NativeAdAttributes
 import ir.ayantech.ayanadmanager.utils.constant.AppMarket
 
 class MainActivity : AppCompatActivity() {
+    private val viewModel by lazy { ViewModelProvider(this)[AdsDemoViewModel::class.java] }
     val appKey = "0d2d289e1f0c76143af11bab6fb60881099983743e223d9e8b4cbd06a84c07d7"
 
     val hamrahAdNativeContainerKey = "e60e4754-9b02-4af2-ab70-303afb873729"
@@ -31,15 +34,26 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        viewModel.onInitializing()
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.state.collect { state ->
+                    findViewById<TextView>(R.id.status).text = state.message
+                    listOf(R.id.ad1, R.id.ad2, R.id.ad3).forEach { id ->
+                        findViewById<Button>(id).isEnabled = state.ready
+                    }
+                }
+            }
+        }
         AyanAdManager.initialize(
             appCompatActivity = this,
             appKey = appKey,
             appMarket = AppMarket.CafeBazaar,
             onError = {
-                Log.d("TAG", "onError: $it")
+                viewModel.onInitializationFailed(it)
             },
             onSuccess = {
-                Log.d("TAG", "onSuccess")
+                viewModel.onInitialized()
             }
         )
 
@@ -73,12 +87,9 @@ class MainActivity : AppCompatActivity() {
                 appCompatActivity = this,
                 adContainerId = findViewById(R.id.nativeAdMob),
                 nativeAdAttributes = NativeAdAttributes(
-                    titleColor = ContextCompat.getColor(
-                        this,
-                        R.color.black
-                    ),
-                    buttonTextColor = "#000000".toColorInt(),
-                    buttonBackgroundTint = "#ffffff".toColorInt(),
+                    titleColor = R.color.black,
+                    buttonTextColor = R.color.black,
+                    buttonBackgroundTint = R.color.white,
                     typeface = ResourcesCompat.getFont(this, R.font.medium)
                 ),
                 adSize = null,

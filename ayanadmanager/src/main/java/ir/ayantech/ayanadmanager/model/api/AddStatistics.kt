@@ -1,16 +1,21 @@
 package ir.ayantech.ayanadmanager.model.api
 
 import ir.ayantech.ayanadmanager.BuildConfig
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-data class AddStatisticsOutPutParameters(val ClickTracker: String?)
+@Serializable
+data class AddStatisticsOutPutParameters(@SerialName("ClickTracker") val clickTracker: String?)
+
+@Serializable
 data class AddStatisticsInputParameters(
-    val ContainerKey: String?,
-    val AdUnitId: String?,
-    val AdSource: String?,
-    val AppMarket: String,
-    val AppVersion: Long,
-    var FailureCause: String?,
-    val SdkVersion: String = BuildConfig.SDK_VERSION,
-    val OsName: String,
-    val OsVersion: Int,
+    @SerialName("ContainerKey") val containerKey: String?,
+    @SerialName("AdUnitId") val adUnitId: String?,
+    @SerialName("AdSource") val adSource: String?,
+    @SerialName("AppMarket") val appMarket: String,
+    @SerialName("AppVersion") val appVersion: Long,
+    @SerialName("FailureCause") var failureCause: String?,
+    @SerialName("SdkVersion") val sdkVersion: String = BuildConfig.SDK_VERSION,
+    @SerialName("OsName") val osName: String,
+    @SerialName("OsVersion") val osVersion: Int,
 )

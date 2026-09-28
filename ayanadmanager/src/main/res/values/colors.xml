@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="white">#FFFFFF</color>
+    <color name="ayan_ad_title">#FF353535</color>
+    <color name="ayan_ad_description">#FF424242</color>
+    <color name="ayan_ad_button_background">#FF931FA8</color>
+    <color name="ayan_ad_button_text">#FF000000</color>
+    <color name="ayan_ad_background">#FF000000</color>
 </resources>

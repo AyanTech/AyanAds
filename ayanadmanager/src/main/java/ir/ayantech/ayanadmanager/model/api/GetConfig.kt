@@ -2,26 +2,31 @@ package ir.ayantech.ayanadmanager.model.api
 
 import ir.ayantech.ayanadmanager.utils.ContainerType
 import ir.ayantech.ayanadmanager.utils.constant.AdSource
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 
-data class GetConfigAdInputParameters(val AppKey: String)
+@Serializable
+data class GetConfigAdInputParameters(@SerialName("AppKey") val appKey: String)
 
+@Serializable
 data class GetConfigAdOutputParameters(
-    val Name: String,
-    val AdSourcePriority: List<AdSourcePriority>,
-    val AdUnits: List<AdUnit>
+    @SerialName("Name") val name: String,
+    @SerialName("AdSourcePriority") val adSourcePriority: List<AdSourcePriority>,
+    @SerialName("AdUnits") val adUnits: List<AdUnit>
 )
 
+@Serializable
 data class AdSourcePriority(
-    val AdSource: AdSource,
-    val AppId: String?,
-    val SharePercent: Long,
+    @SerialName("AdSource") val adSource: AdSource,
+    @SerialName("AppId") val appId: String?,
+    @SerialName("SharePercent") val sharePercent: Long,
 )
 
+@Serializable
 data class AdUnit(
-    val ContainerKey: String,
-    val ContainerType: ContainerType,
-    val AdSource: AdSource,
-    val AdUnitId: String
+    @SerialName("ContainerKey") val containerKey: String,
+    @SerialName("ContainerType") val containerType: ContainerType,
+    @SerialName("AdSource") val adSource: AdSource,
+    @SerialName("AdUnitId") val adUnitId: String
 )
-

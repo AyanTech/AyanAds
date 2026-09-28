@@ -1,6 +1,5 @@
 package ir.ayantech.ayanadmanager.networks.admob
 
-import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
 import android.view.ViewGroup
 import android.widget.Button
@@ -37,10 +36,11 @@ import ir.ayantech.ayanadmanager.utils.constant.Config.GOOGLE_AD_VIEW
 import ir.ayantech.ayanadmanager.utils.makeGone
 import ir.ayantech.ayanadmanager.utils.makeVisible
 import ir.ayantech.ayanadmanager.utils.toPx
-import ir.ayantech.ayanadmanager.utils.trying
 
 class AdmobProvider : AdProvider {
 
+    private var generation = 0
+    private var ownedNativeView: NativeAdView? = null
     private var mInterstitialAd: InterstitialAd? = null
     private var currentNativeAd: NativeAd? = null
     private var adView: AdView? = null
@@ -48,10 +48,12 @@ class AdmobProvider : AdProvider {
     override fun loadAd(
         config: AdRequestConfig
     ) {
+        destroy()
+        val adConfig = config as? AdMobConfig ?: return
         if (ConsentManager.canShowAds()) {
-            (config as AdMobConfig).apply {
-                if (addStatisticsInput.AdUnitId.isNullOrEmpty()) {
-                    callback.onAdFailed("AdUnitId cannot be empty")
+            adConfig.apply {
+                if (addStatisticsInput.adUnitId.isNullOrEmpty()) {
+                    callback?.onAdFailed("AdUnitId cannot be empty")
                     return
                 }
 
@@ -64,9 +66,9 @@ class AdmobProvider : AdProvider {
                                 statistics = addStatisticsInput,
                                 callback = callback
                             )
-                        } ?: {
+                        } ?: run {
                             Logger.e("ViewGroup can not be null !")
-                            callback.onAdFailed("ViewGroup can not be null !")
+                            callback?.onAdFailed("ViewGroup can not be null !")
                         }
                     }
 
@@ -80,6 +82,10 @@ class AdmobProvider : AdProvider {
 
                     ContainerType.Native -> {
                         viewGroup?.let {
+                            if (!useDefaultNativeAdView && findNativeAdView(it) == null) {
+                                callback?.onAdFailed("Custom AdMob assets must be inside a NativeAdView.")
+                                return
+                            }
                             showNativeAd(
                                 appCompatActivity = appCompatActivity,
                                 statistics = addStatisticsInput,
@@ -88,15 +94,15 @@ class AdmobProvider : AdProvider {
                                 nativeAdAttributes = nativeAdAttributes,
                                 callback = callback
                             )
-                        } ?: {
+                        } ?: run {
                             Logger.e("ViewGroup can not be null !")
-                            callback.onAdFailed("ViewGroup can not be null !")
+                            callback?.onAdFailed("ViewGroup can not be null !")
                         }
                     }
                 }
             }
         } else {
-            Logger.w("Ads are currently unavailable due to privacy settings")
+            adConfig.callback?.onAdFailed("Ads are currently unavailable due to privacy settings")
         }
 
     }
@@ -104,70 +110,86 @@ class AdmobProvider : AdProvider {
     private fun showBannerAd(
         adView: AdView?,
         statistics: AddStatisticsInputParameters,
-        callback: AdCallback
+        callback: AdCallback?
     ) {
+        val requestGeneration = generation
         adView?.let { view ->
             val adRequest = AdRequest.Builder().build()
             view.apply {
-                loadAd(adRequest)
                 adListener = object : AdListener() {
                     override fun onAdLoaded() {
+                        if (requestGeneration != generation) return
                         super.onAdLoaded()
-                        callback.onAdLoaded()
                         sendStatistics(input = statistics)
+                        callback?.onAdLoaded()
                     }
 
                     override fun onAdClicked() {
+                        if (requestGeneration != generation) return
                         super.onAdClicked()
-                        submitClick(adUnitId = statistics.AdUnitId)
-                        callback.onAdClicked()
+                        submitClick(adUnitId = statistics.adUnitId)
+                        callback?.onAdClicked()
                     }
 
                     override fun onAdFailedToLoad(p0: LoadAdError) {
+                        if (requestGeneration != generation) return
                         super.onAdFailedToLoad(p0)
                         handleAdError(error = p0.toString(), callback, statistics)
                     }
                 }
+                loadAd(adRequest)
             }
-        } ?: callback.onAdFailed("Google AdView is Null")
+        } ?: callback?.onAdFailed("Google AdView is Null")
     }
 
     private fun showInterstitialAd(
         appCompatActivity: AppCompatActivity,
         statistics: AddStatisticsInputParameters,
-        callback: AdCallback
+        callback: AdCallback?
     ) {
+        val requestGeneration = generation
         mInterstitialAd = null
         val adRequest = AdRequest.Builder().build()
         InterstitialAd.load(
             appCompatActivity,
-            statistics.AdUnitId ?: "",
+            statistics.adUnitId ?: "",
             adRequest,
             object : InterstitialAdLoadCallback() {
 
                 override fun onAdFailedToLoad(adError: LoadAdError) {
-                    callback.onAdFailed(adError.toString())
+                    if (requestGeneration != generation) return
                     mInterstitialAd = null
+                    handleAdError(adError.toString(), callback, statistics)
                 }
 
                 override fun onAdLoaded(interstitialAd: InterstitialAd) {
-                    callback.onAdLoaded()
-                    sendStatistics(statistics)
+                    if (requestGeneration != generation) return
+                    if (appCompatActivity.isDestroyed || appCompatActivity.isFinishing) return
                     mInterstitialAd = interstitialAd
                     mInterstitialAd?.fullScreenContentCallback =
                         object : FullScreenContentCallback() {
                             override fun onAdClicked() {
+                                if (requestGeneration != generation) return
                                 super.onAdClicked()
-                                callback.onAdClicked()
-                                submitClick(adUnitId = statistics.AdUnitId)
+                                callback?.onAdClicked()
+                                submitClick(adUnitId = statistics.adUnitId)
+                            }
+
+                            override fun onAdFailedToShowFullScreenContent(error: com.google.android.gms.ads.AdError) {
+                                if (requestGeneration != generation) return
+                                mInterstitialAd = null
+                                handleAdError(error.toString(), callback, statistics)
                             }
 
                             override fun onAdDismissedFullScreenContent() {
+                                if (requestGeneration != generation) return
                                 super.onAdDismissedFullScreenContent()
                                 mInterstitialAd = null
                             }
                         }
-                    mInterstitialAd?.show(appCompatActivity)
+                    sendStatistics(statistics)
+                    callback?.onAdLoaded()
+                    if (requestGeneration == generation) mInterstitialAd?.show(appCompatActivity)
                 }
 
             })
@@ -179,18 +201,19 @@ class AdmobProvider : AdProvider {
         useDefaultNativeView: Boolean,
         nativeAdAttributes: NativeAdAttributes,
         viewGroup: ViewGroup,
-        callback: AdCallback
+        callback: AdCallback?
     ) {
+        val requestGeneration = generation
         currentNativeAd?.destroy()
 
-        val builder = AdLoader.Builder(appCompatActivity, statistics.AdUnitId ?: "")
+        val builder = AdLoader.Builder(appCompatActivity, statistics.adUnitId ?: "")
 
         builder.forNativeAd { nativeAd ->
 
             /** If this callback occurs after the activity is destroyed, must call
             destroy and return or you may get a memory leak. **/
 
-            if (appCompatActivity.isDestroyed || appCompatActivity.isFinishing || appCompatActivity.isChangingConfigurations) {
+            if (requestGeneration != generation || appCompatActivity.isDestroyed || appCompatActivity.isFinishing || appCompatActivity.isChangingConfigurations) {
                 nativeAd.destroy()
                 return@forNativeAd
             }
@@ -201,6 +224,7 @@ class AdmobProvider : AdProvider {
                 val defaultNativeBinding =
                     AdmobNativeLayoutBinding.inflate(appCompatActivity.layoutInflater)
                 populateDefaultNativeAdView(nativeAd, defaultNativeBinding, nativeAdAttributes)
+                ownedNativeView = defaultNativeBinding.root
                 viewGroup.removeAllViews()
                 viewGroup.addView(defaultNativeBinding.root)
             } else {
@@ -211,33 +235,40 @@ class AdmobProvider : AdProvider {
 
         val adLoader = builder.withAdListener(object : AdListener() {
             override fun onAdFailedToLoad(p0: LoadAdError) {
+                if (requestGeneration != generation) return
                 super.onAdFailedToLoad(p0)
                 handleAdError(error = p0.toString(), callback, statistics)
             }
 
             override fun onAdClicked() {
+                if (requestGeneration != generation) return
                 super.onAdClicked()
-                callback.onAdClicked()
-                submitClick(adUnitId = statistics.AdUnitId)
+                callback?.onAdClicked()
+                submitClick(adUnitId = statistics.adUnitId)
             }
 
             override fun onAdLoaded() {
+                if (requestGeneration != generation) return
                 super.onAdLoaded()
-                callback.onAdLoaded()
                 sendStatistics(statistics)
+                callback?.onAdLoaded()
             }
         }).build()
 
         adLoader.loadAd(AdRequest.Builder().build())
     }
 
-    private fun populateCustomNativeAdView(nativeAd: NativeAd, viewGroup: ViewGroup) {
-        val context = viewGroup.context
-        val existingAdView = viewGroup.findViewWithTag<NativeAdView>("NativeAdView")
-        val nativeAdView = existingAdView ?: NativeAdView(context).apply {
-            tag = "NativeAdView"
-            viewGroup.addView(this, 0)
+    private fun findNativeAdView(parent: ViewGroup): NativeAdView? {
+        if (parent is NativeAdView) return parent
+        for (index in 0 until parent.childCount) {
+            val child = parent.getChildAt(index)
+            if (child is ViewGroup) findNativeAdView(child)?.let { return it }
         }
+        return null
+    }
+
+    private fun populateCustomNativeAdView(nativeAd: NativeAd, viewGroup: ViewGroup) {
+        val nativeAdView = requireNotNull(findNativeAdView(viewGroup))
 
         val title = nativeAd.headline
         val description = nativeAd.body
@@ -305,8 +336,15 @@ class AdmobProvider : AdProvider {
             }
         }
 
-        traverseViews(viewGroup)
-        nativeAdView.callToActionView = viewGroup.findViewById(R.id.ad_cta)
+        traverseViews(nativeAdView)
+        nativeAdView.headlineView = nativeAdView.findViewById(R.id.ad_title)
+        nativeAdView.bodyView = nativeAdView.findViewById(R.id.ad_description)
+        nativeAdView.iconView = nativeAdView.findViewById(R.id.ad_icon)
+        nativeAdView.imageView = nativeAdView.findViewById(R.id.ad_banner)
+        nativeAdView.priceView = nativeAdView.findViewById(R.id.ad_price)
+        nativeAdView.storeView = nativeAdView.findViewById(R.id.ad_store)
+        nativeAdView.starRatingView = nativeAdView.findViewById(R.id.ad_stars)
+        nativeAdView.callToActionView = nativeAdView.findViewById(R.id.ad_cta)
         nativeAdView.setNativeAd(nativeAd)
 
     }
@@ -320,6 +358,7 @@ class AdmobProvider : AdProvider {
         val nativeAdView = binding.root
 
         with(binding.nativeLayout) {
+            hamrahAdNativeBanner.setBackgroundResource(nativeAdAttributes.backgroundColor)
 
             nativeAdView.apply {
                 mediaView = binding.mediaView
@@ -331,7 +370,7 @@ class AdmobProvider : AdProvider {
 
             hamrahAdNativeTitle.apply {
                 text = nativeAd.headline
-                setTextColor(nativeAdAttributes.titleColor)
+                setTextColor(ContextCompat.getColorStateList(context, nativeAdAttributes.titleColor))
                 setTypeface(nativeAdAttributes.typeface)
             }
 
@@ -343,7 +382,7 @@ class AdmobProvider : AdProvider {
                 hamrahAdNativeDescription.apply {
                     makeVisible()
                     text = nativeAd.body
-                    setTextColor(nativeAdAttributes.descriptionColor)
+                    setTextColor(ContextCompat.getColorStateList(context, nativeAdAttributes.descriptionColor))
                     setTypeface(nativeAdAttributes.typeface)
                 }
             }
@@ -366,11 +405,11 @@ class AdmobProvider : AdProvider {
                         height = nativeAdAttributes.buttonHeight.toPx(context)
                     }
                     setTypeface(nativeAdAttributes.typeface)
-                    setTextColor(nativeAdAttributes.buttonTextColor)
+                    setTextColor(ContextCompat.getColorStateList(context, nativeAdAttributes.buttonTextColor))
                     background =
                         ContextCompat.getDrawable(this.context, R.drawable.button_background)
                     backgroundTintList =
-                        ColorStateList.valueOf(nativeAdAttributes.buttonBackgroundTint)
+                        ContextCompat.getColorStateList(context, nativeAdAttributes.buttonBackgroundTint)
                 }
             }
 
@@ -385,31 +424,29 @@ class AdmobProvider : AdProvider {
 
     private fun handleAdError(
         error: String,
-        callback: AdCallback,
+        callback: AdCallback?,
         statistics: AddStatisticsInputParameters
     ) {
-        statistics.FailureCause = error
-        callback.onAdFailed(statistics.FailureCause!!)
-        sendStatistics(statistics)
-    }
-
-    private fun destroyBannerAd() {
-        adView?.destroy()
-    }
-
-    private fun destroyNativeAd() {
-        currentNativeAd?.destroy()
-    }
-
-    private fun destroyInterstitialAd() {
-        mInterstitialAd = null
+        sendStatistics(statistics.copy(failureCause = error))
+        callback?.onAdFailed(error)
     }
 
     override fun destroy() {
-        trying {
-            destroyInterstitialAd()
-            destroyBannerAd()
-            destroyNativeAd()
+        generation++
+        mInterstitialAd?.fullScreenContentCallback = null
+        mInterstitialAd = null
+        adView?.let { view ->
+            view.adListener = object : AdListener() {}
+            (view.parent as? ViewGroup)?.removeView(view)
+            view.destroy()
         }
+        adView = null
+        currentNativeAd?.destroy()
+        currentNativeAd = null
+        ownedNativeView?.let { view ->
+            (view.parent as? ViewGroup)?.removeView(view)
+            view.destroy()
+        }
+        ownedNativeView = null
     }
 }

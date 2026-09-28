@@ -13,7 +13,7 @@ class AdRequestConfigBuilder(
     private val containerType: ContainerType,
     private val appCompatActivity: AppCompatActivity,
     private val addStatisticsInput: AddStatisticsInputParameters,
-    private val callback: AdCallback
+    private val callback: AdCallback? = null
 ) {
 
     private var adSize: AdSizeType? = null
@@ -39,12 +39,14 @@ class AdRequestConfigBuilder(
         adUnitId: String,
         viewGroup: ViewGroup?,
         useDefaultNativeAdView: Boolean,
-        nativeAdAttributes: NativeAdAttributes
+        nativeAdAttributes: NativeAdAttributes,
+        adSize: AdSizeType? = null,
     ): AdRequestConfigBuilder {
         this.viewGroup = viewGroup
         this.useDefaultNativeAdView = useDefaultNativeAdView
         this.nativeAdAttributes = nativeAdAttributes
         this.adUnitId = adUnitId
+        this.adSize = adSize
         return this
     }
 

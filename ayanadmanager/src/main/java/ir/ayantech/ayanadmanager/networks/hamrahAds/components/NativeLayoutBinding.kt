@@ -1,22 +1,22 @@
 package ir.ayantech.ayanadmanager.networks.hamrahAds.components
 
 import android.annotation.SuppressLint
-import android.content.res.ColorStateList
-import android.graphics.Color
 import android.graphics.Typeface
+import androidx.annotation.ColorRes
 import androidx.core.content.ContextCompat
-import ir.ayantech.ayanadmanager.utils.toPx
 import ir.ayantech.ayanadmanager.R
 import ir.ayantech.ayanadmanager.databinding.NativeLayoutBinding
+import ir.ayantech.ayanadmanager.utils.toPx
 
+/** Color properties accept color resource IDs (R.color.*), resolved using the ad view context. */
 data class NativeAdAttributes(
-    val titleColor: Int = Color.parseColor("#353535"),
-    val descriptionColor: Int = Color.parseColor("#424242"),
-    val buttonBackgroundTint: Int = Color.parseColor("#931FA8"),
-    val buttonTextColor: Int = Color.parseColor("#000000"),
+    @ColorRes val titleColor: Int = R.color.ayan_ad_title,
+    @ColorRes val descriptionColor: Int = R.color.ayan_ad_description,
+    @ColorRes val buttonBackgroundTint: Int = R.color.ayan_ad_button_background,
+    @ColorRes val buttonTextColor: Int = R.color.ayan_ad_button_text,
     val buttonWidth: Int = 80,
     val buttonHeight: Int = 35,
-    val backgroundColor: Int = Color.parseColor("#000000"),
+    @ColorRes val backgroundColor: Int = R.color.ayan_ad_background,
     val typeface: Typeface? = null
 )
 
@@ -27,12 +27,12 @@ fun NativeLayoutBinding.init(
     val context = hamrahAdNativeLogo.context
     hamrahAdNativeTitle.apply {
         isSelected = true
-        setTextColor(nativeAdAttributes.titleColor)
+        setTextColor(ContextCompat.getColorStateList(context, nativeAdAttributes.titleColor))
         setTypeface(nativeAdAttributes.typeface)
     }
     hamrahAdNativeDescription.apply {
         isSelected = true
-        setTextColor(nativeAdAttributes.descriptionColor)
+        setTextColor(ContextCompat.getColorStateList(context, nativeAdAttributes.descriptionColor))
         setTypeface(nativeAdAttributes.typeface)
     }
     hamrahAdNativeCta.apply {
@@ -41,12 +41,12 @@ fun NativeLayoutBinding.init(
             height = nativeAdAttributes.buttonHeight.toPx(context)
         }
         setTypeface(nativeAdAttributes.typeface)
-        setTextColor(nativeAdAttributes.buttonTextColor)
+        setTextColor(ContextCompat.getColorStateList(context, nativeAdAttributes.buttonTextColor))
         background = ContextCompat.getDrawable(this.context, R.drawable.button_background)
         backgroundTintList =
-            ColorStateList.valueOf(nativeAdAttributes.buttonBackgroundTint)
+            ContextCompat.getColorStateList(context, nativeAdAttributes.buttonBackgroundTint)
     }
     hamrahAdNativeBanner.apply {
-        setBackgroundColor(nativeAdAttributes.backgroundColor)
+        setBackgroundResource(nativeAdAttributes.backgroundColor)
     }
 }

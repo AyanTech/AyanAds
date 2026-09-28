@@ -12,7 +12,7 @@ abstract class AdRequestConfig(
     private val containerType: ContainerType,
     private val appCompatActivity: AppCompatActivity,
     private val addStatisticsInput: AddStatisticsInputParameters,
-    private val callback: AdCallback
+    open val callback: AdCallback? = null
 ) {
     abstract fun getAdView(parentView: ViewGroup): View
 }

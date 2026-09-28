@@ -93,9 +93,9 @@ When displaying native ads, you can configure the behavior based on whether you 
        appCompatActivity = this,
        adContainerId = findViewById(R.id.view),
        nativeAdAttributes = NativeAdAttributes(
-           titleColor = ContextCompat.getColor(this, R.color.black),
-           buttonTextColor = Color.parseColor("#000000"),
-           buttonBackgroundTint = Color.parseColor("#ffffff"),
+           titleColor = R.color.black,
+           buttonTextColor = R.color.black,
+           buttonBackgroundTint = R.color.white,
            typeface = ResourcesCompat.getFont(this, R.font.medium)
        )
    )
@@ -175,3 +175,43 @@ adb logcat -s AyanAdManager
 
 This will help you monitor the SDK’s behavior, initialization process, and any errors or debug information provided during integration.
 
+
+## Networking and architecture
+
+The SDK uses Networking 2.0.5 and Generator 2.0.4 with KSP-generated repository and remote data source implementations. See [the migration and architecture notes](docs/networking-migration.md) for the Data, Domain, and UI boundaries, compatibility changes, and build/test commands.
+
+## Optional callbacks and lifecycle
+
+The callback may be omitted or passed as `null`:
+
+```kotlin
+AyanAdManager.showAd(
+    containerKey = "banner",
+    appCompatActivity = this,
+    adContainerId = bannerContainer,
+    adCallback = null,
+)
+```
+
+Override only the events you need; all three methods have default no-op implementations:
+
+```kotlin
+AyanAdManager.showAd(
+    containerKey = "banner",
+    appCompatActivity = this,
+    adContainerId = bannerContainer,
+    adCallback = object : AdCallback {
+        override fun onAdClicked() {
+            // Handle the click.
+        }
+    },
+)
+```
+
+`initialize` also accepts nullable or omitted `onSuccess` and `onError` callbacks. Provider fallback and statistics still run when no callback is supplied. `adSize` and `adContainerId` default to `null`; banner/native ads require a container, while interstitials do not.
+
+Requests are replaced when the same Activity/placement is used again, and their providers are released when the Activity is destroyed. `shutdown()` releases all remaining providers and network jobs. The optional `adProvider` property is nullable when no provider is active.
+
+For custom AdMob native layouts, put all ad assets inside `com.google.android.gms.ads.nativead.NativeAdView` and retain the documented asset IDs. The sample includes this wrapper. Passing an invalid custom layout reports an error and allows the next provider to run.
+
+All `NativeAdAttributes` color parameters accept `@ColorRes` IDs such as `R.color.black`, including color selectors. Pass resource IDs directly; do not pass resolved ARGB values or `Color.parseColor()` results. Colors are resolved from the view context when the ad is bound.
