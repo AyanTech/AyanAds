@@ -1,3 +1,5 @@
+[![](https://jitpack.io/v/AyanTech/AyanAds.svg)](https://jitpack.io/#AyanTech/AyanAds)
+
 # **AyanAdManager SDK**
 
 ## **Introduction**
