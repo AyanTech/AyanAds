@@ -1,11 +1,11 @@
 package ir.ayantech.ayanadmanager.model.api
 
-import com.google.gson.annotations.SerializedName
 import ir.ayantech.ayanadmanager.utils.constant.AdSource
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class AdProviderPriority(
-    @SerializedName("adSource")
-    val adSource: AdSource,
-    @SerializedName("priority")
-    val appId: String?
+    @SerialName("adSource") val adSource: AdSource,
+    @SerialName("priority") val appId: String?
 )

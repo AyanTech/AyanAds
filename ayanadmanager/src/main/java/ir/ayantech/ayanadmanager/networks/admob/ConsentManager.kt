@@ -21,11 +21,11 @@ object ConsentManager {
             if (consentInformation?.isConsentFormAvailable == true) {
                 loadAndShowConsentForm(appCompatActivity = appCompatActivity, onConsentUpdated)
             } else {
-                onConsentUpdated?.invoke(consentInformation?.canRequestAds() != false)
+                onConsentUpdated?.invoke(consentInformation?.canRequestAds() == true)
             }
         }, { error ->
             Logger.e("Consent Info Error: ${error.message}")
-            onConsentUpdated?.invoke(true) // display ads even has errors.
+            onConsentUpdated?.invoke(consentInformation?.canRequestAds() == true)
         })
     }
 
@@ -37,7 +37,7 @@ object ConsentManager {
             if (error != null) {
                 Logger.e("Consent Form Error: ${error.message}")
             }
-            onConsentUpdated?.invoke(consentInformation?.canRequestAds() != false)
+            onConsentUpdated?.invoke(consentInformation?.canRequestAds() == true)
         }
     }
 
@@ -60,6 +60,6 @@ object ConsentManager {
     }
 
     fun canShowAds(): Boolean {
-        return consentInformation?.canRequestAds() != false
+        return consentInformation?.canRequestAds() == true
     }
 }

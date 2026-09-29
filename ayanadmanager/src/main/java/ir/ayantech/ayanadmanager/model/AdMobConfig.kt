@@ -21,7 +21,7 @@ data class AdMobConfig(
     val useDefaultNativeAdView: Boolean,
     val nativeAdAttributes: NativeAdAttributes,
     val addStatisticsInput: AddStatisticsInputParameters,
-    val callback: AdCallback
+    override val callback: AdCallback? = null
 ) : AdRequestConfig(containerType, appCompatActivity, addStatisticsInput, callback) {
 
 

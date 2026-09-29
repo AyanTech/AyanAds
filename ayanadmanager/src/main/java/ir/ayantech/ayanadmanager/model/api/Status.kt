@@ -1,8 +1,11 @@
 package ir.ayantech.ayanadmanager.model.api
 
 import ir.ayantech.ayanadmanager.utils.constant.ErrorCode
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class Status(
-    val Code: ErrorCode,
-    val Description: String
+    @SerialName("Code") val code: ErrorCode,
+    @SerialName("Description") val description: String
 )

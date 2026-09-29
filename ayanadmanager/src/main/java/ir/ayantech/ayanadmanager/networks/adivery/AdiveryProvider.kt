@@ -7,10 +7,10 @@ class AdiveryProvider : AdProvider {
     override fun loadAd(
         config: AdRequestConfig
     ) {
-//        callback.onAdFailed("Not yet implemented")
+        config.callback?.onAdFailed("This ad provider is not supported yet.")
     }
 
     override fun destroy() {
-        TODO("Not yet implemented")
+        // No resources are allocated by this provider.
     }
 }

@@ -1,5 +1,10 @@
 package ir.ayantech.ayanadmanager.model.api
 
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-data class TrackStatisticsInputParameters(val ClickTracker: String)
-data class TrackStatisticsOutputParameters(val Status: Status)
+@Serializable
+data class TrackStatisticsInputParameters(@SerialName("ClickTracker") val clickTracker: String)
+
+@Serializable
+data class TrackStatisticsOutputParameters(@SerialName("Status") val status: Status)

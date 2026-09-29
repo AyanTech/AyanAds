@@ -2,4 +2,9 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="sample_launcher_background">#3DDC84</color>
+    <color name="sample_transparent">#00000000</color>
+    <color name="sample_launcher_grid">#33FFFFFF</color>
+    <color name="sample_launcher_shadow">#44000000</color>
+    <color name="sample_ad_link">#0000FF</color>
 </resources>
