@@ -69,6 +69,7 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 
     implementation(libs.hamrahAds)
+    implementation(platform(libs.ktor.bom))
     implementation(libs.ayanNetworking)
     implementation(libs.ayanNetworkGenerator)
     ksp(libs.ayanNetworkGenerator)

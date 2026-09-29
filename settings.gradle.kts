@@ -18,10 +18,10 @@ dependencyResolutionManagement {
         maven {
             url = uri("https://maven.aliyun.com/repository/google")
             content {
-                includeGroup("androidx.lifecycle")
-                includeGroup("androidx.privacysandbox.ads")
-                includeGroup("androidx.startup")
+                includeGroupByRegex("androidx\\..*")
+                includeGroup("com.google.android.material")
                 includeGroup("com.google.android.gms")
+                includeGroupByRegex("com\\.android\\.tools.*")
             }
         }
         google()

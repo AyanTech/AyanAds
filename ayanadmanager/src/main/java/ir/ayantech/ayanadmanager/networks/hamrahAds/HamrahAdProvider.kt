@@ -24,8 +24,8 @@ import ir.ayantech.hamrahads.ads.interstitial.InterstitialAdLoader
 import ir.ayantech.hamrahads.ads.interstitial.InterstitialAdView
 import ir.ayantech.hamrahads.ads.native.NativeAdLoader
 import ir.ayantech.hamrahads.ads.native.NativeAdView
-import ir.ayantech.hamrahads.listener.RequestListener
-import ir.ayantech.hamrahads.listener.ShowListener
+import ir.ayantech.hamrahads.listener.AdLoadListener
+import ir.ayantech.hamrahads.listener.AdDisplayListener
 import ir.ayantech.hamrahads.model.enums.BannerSize
 import ir.ayantech.hamrahads.model.error.HamrahAdsError
 
@@ -116,7 +116,7 @@ class HamrahAdProvider : AdProvider {
             requestBanner = HamrahAds.RequestBannerAds()
                 .setContext(appCompatActivity)
                 .initId(statistics.adUnitId.orEmpty())
-                .initListener(object : RequestListener {
+                .initListener(object : AdLoadListener {
                     override fun onSuccess() {
                         if (requestGeneration != generation) return
                         showBannerAds =
@@ -151,7 +151,7 @@ class HamrahAdProvider : AdProvider {
         requestInterstitial = HamrahAds.RequestInterstitialAds()
             .setContext(appCompatActivity)
             .initId(statistics.adUnitId ?: "")
-            .initListener(requestListener = object : RequestListener {
+            .initListener(requestListener = object : AdLoadListener {
                 override fun onSuccess() {
                     if (requestGeneration != generation) return
                     showInterstitialAds =
@@ -187,7 +187,7 @@ class HamrahAdProvider : AdProvider {
             requestNative = HamrahAds.RequestNativeAds()
                 .setContext(appCompatActivity)
                 .initId(statistics.adUnitId ?: "")
-                .initListener(requestListener = object : RequestListener {
+                .initListener(requestListener = object : AdLoadListener {
                     override fun onSuccess() {
                         if (requestGeneration != generation) return
                         showNativeAds =
@@ -245,7 +245,7 @@ class HamrahAdProvider : AdProvider {
             .setViewGroup(viewGroup)
             .initId(statistics.adUnitId ?: "")
             .setSize(adSize ?: BannerSize.BANNER_320x50)
-            .initListener(showListener = object : ShowListener {
+            .initListener(showListener = object : AdDisplayListener {
 
                 override fun onLoaded() {
                     if (requestGeneration != generation) return
@@ -299,9 +299,9 @@ class HamrahAdProvider : AdProvider {
         callback?.onAdFailed(message)
     }
 
-    private fun createAdListener(callback: AdCallback?, statistics: AddStatisticsInputParameters): ShowListener {
+    private fun createAdListener(callback: AdCallback?, statistics: AddStatisticsInputParameters): AdDisplayListener {
         val requestGeneration = generation
-        return object : ShowListener {
+        return object : AdDisplayListener {
 
             override fun onLoaded() {
                 if (requestGeneration != generation) return

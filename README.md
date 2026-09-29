@@ -19,6 +19,9 @@ Replace `YOUR_ADMOB_APP_ID` with your actual AdMob app ID. This step is mandator
 ---
 
 ## **Installation**
+
+Requires Android API 21 or higher. See [dependency versions and compatibility limits](docs/dependency-updates.md) for the current dependency update.
+
 Step 1: Add the SDK to your Project
 In your project-level build.gradle file, include the following repository:
 

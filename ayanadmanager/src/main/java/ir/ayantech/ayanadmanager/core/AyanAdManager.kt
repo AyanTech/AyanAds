@@ -23,7 +23,7 @@ import ir.ayantech.ayanadmanager.utils.StringCallBack
 import ir.ayantech.ayanadmanager.utils.constant.AdSource
 import ir.ayantech.ayanadmanager.utils.constant.AppMarket
 import ir.ayantech.hamrahads.HamrahAds
-import ir.ayantech.hamrahads.listener.InitListener
+import ir.ayantech.hamrahads.listener.InitializationListener
 import ir.ayantech.hamrahads.model.error.HamrahAdsError
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -153,8 +153,8 @@ object AyanAdManager {
     private suspend fun initializeHamrahAds(activity: AppCompatActivity, appId: String) {
         require(appId.isNotBlank()) { "HamrahAd appId is not valid." }
         suspendCancellableCoroutine<Unit> { continuation ->
-            HamrahAds.Initializer().setContext(activity).initId(appId)
-                .initListener(object : InitListener {
+            val initializer = HamrahAds.Initializer().setContext(activity.applicationContext).initId(appId)
+                .initListener(object : InitializationListener {
                     override fun onSuccess() {
                         if (continuation.isActive) continuation.resume(Unit)
                     }
@@ -167,6 +167,13 @@ object AyanAdManager {
                         )
                     }
                 }).build()
+            if (initializer == null) {
+                if (continuation.isActive) continuation.resumeWithException(
+                    IllegalStateException("Unable to create HamrahAds initializer.")
+                )
+            } else {
+                continuation.invokeOnCancellation { initializer.cancelRequest() }
+            }
         }
     }
 
