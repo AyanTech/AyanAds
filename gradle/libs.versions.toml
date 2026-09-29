@@ -14,7 +14,7 @@ generator = "2.0.4"
 hamrahAds = "2.0.0"
 playServicesAds = "23.6.0"
 userMessagingPlatform = "3.2.0"
-ayanadmanager = "1.1.14-alpha02"
+ayanadmanager = "2.0.0"
 
 ksp = "2.3.12"
 coroutines = "1.11.0"
