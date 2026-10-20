@@ -5,7 +5,6 @@ import ir.ayantech.ayanadmanager.utils.constant.AdSource
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-
 @Serializable
 data class GetConfigAdInputParameters(@SerialName("AppKey") val appKey: String)
 

@@ -11,10 +11,11 @@ activity = "1.11.0"
 constraintlayout = "2.2.2"
 ayanNetworking = "2.0.5"
 generator = "2.0.4"
-hamrahAds = "2.0.0"
+hamrahAds = "2.1.0"
 playServicesAds = "23.6.0"
+robolectric = "4.16.1"
 userMessagingPlatform = "3.2.0"
-ayanadmanager = "2.0.0"
+ayanadmanager = "2.1.0"
 
 ksp = "2.3.12"
 coroutines = "1.11.0"
@@ -38,6 +39,7 @@ hamrahAds = { module = "com.github.AyanTech:HamrahAds", version.ref = "hamrahAds
 ayanNetworkGenerator = { module = "com.github.AyanTech:Generator", version.ref = "generator" }
 
 play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "playServicesAds" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 user-messaging-platform = { module = "com.google.android.ump:user-messaging-platform", version.ref = "userMessagingPlatform" }
 
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }

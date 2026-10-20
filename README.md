@@ -2,6 +2,8 @@
 
 # **AyanAdManager SDK**
 
+For Fragments and RecyclerView feeds, use the [2.1 lifecycle and prepared-ad APIs](docs/lifecycle-and-feeds.md).
+
 ## **Introduction**
 The **AyanAdManager SDK** is a robust solution for managing advertisements in Android applications. It seamlessly integrates with multiple ad providers (e.g., AdMob, HamrahAds, Adivery), enabling developers to display ads efficiently while tracking essential statistics.
 
@@ -44,16 +46,16 @@ dependencies {
 
 ## **Getting Started**
 Step 1: Initialize the SDK
-Before using the SDK, initialize it in your Application class:
+Before using the SDK, initialize it from your host Activity. Consent may require an Activity:
 
 ```
-class MyApp : Application() {
-    override fun onCreate() {
-        super.onCreate()
+class MainActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
         AyanAdManager.initialize(
             appCompatActivity = this,
-            appMarket = "YOUR_APP_MARKET",
+            appMarket = AppMarket.CafeBazaar,
             appKey = "YOUR_APP_KEY",
             onSuccess = { Logger.d("AyanAdManager initialized successfully.") },
             onError = { Logger.e("Failed to initialize AyanAdManager: $it") }
@@ -134,9 +136,8 @@ When displaying native ads, you can configure the behavior based on whether you 
 These IDs are required regardless of the ad type being displayed. They ensure that the SDK can properly bind the ad content to your custom view.
 
 ### **Custom Layout Requirements**
-When using a custom native ad view (`useDefaultNativeAdView = false`), **all layout containers** — including the parent and all nested views — must use **LinearLayout**.
-
-Avoid using **RelativeLayout**, **ConstraintLayout**, or any other layout types anywhere in the hierarchy. These layouts are not supported and may lead to rendering issues or SDK integration problems.
+Custom native layouts may use nested ViewGroups. Keep the documented asset IDs.
+AdMob assets must be inside a `com.google.android.gms.ads.nativead.NativeAdView`.
 
 ### Consent Management
 For Google Ads, it is necessary to obtain user consent for personalized advertising, especially for users in specific regions like the European Union (EU). The AyanAdManager SDK handles this automatically. However, if you must manually request consent or display a consent dialog at a specific point in your app, you can use the ```ConsentManager.requestConsent()``` function.
@@ -148,11 +149,12 @@ It's crucial to handle the lifecycle of ads when the activity or fragment is des
 ``` Kotlin
 override fun onDestroy() {
     super.onDestroy()
-    AyanAdManager.adProvider.destroy()
+    adHandle?.dispose() // Returned by AyanAdManager.bindAd(...)
 }
 
 ```
-This method ensures that all ad resources are properly released, preventing memory leaks and improving your application's overall performance.
+For Fragments, pass `viewLifecycleOwner` to `bindAd()` and release the handle in `onDestroyView()`.
+For lists, use `ScreenAdSession` and dispose each binding in `onViewRecycled()`.
 
 
 ### ProGuard Configuration

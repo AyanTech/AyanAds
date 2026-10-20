@@ -7,7 +7,6 @@ import ir.ayantech.ayanadmanager.core.AdCallback
 import ir.ayantech.ayanadmanager.model.api.AddStatisticsInputParameters
 import ir.ayantech.ayanadmanager.utils.ContainerType
 
-
 abstract class AdRequestConfig(
     private val containerType: ContainerType,
     private val appCompatActivity: AppCompatActivity,
