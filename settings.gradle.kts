@@ -34,13 +34,3 @@ dependencyResolutionManagement {
 rootProject.name = "AyanAdManager"
 include(":app")
 include(":ayanadmanager")
-
-// Develop and test the SDKs together without publishing a temporary binary.
-val hamrahSource = file(providers.gradleProperty("hamrahAdsProject").getOrElse("../HamrahAds"))
-if (hamrahSource.resolve("settings.gradle.kts").isFile) {
-    includeBuild(hamrahSource) {
-        dependencySubstitution {
-            substitute(module("com.github.AyanTech:HamrahAds")).using(project(":hamrahads"))
-        }
-    }
-}
