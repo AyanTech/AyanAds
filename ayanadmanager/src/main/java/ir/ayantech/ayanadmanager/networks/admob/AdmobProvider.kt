@@ -8,6 +8,7 @@ import android.widget.RatingBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.AdRequest
@@ -120,14 +121,17 @@ class AdmobProvider : AdProvider {
                     override fun onAdLoaded() {
                         if (requestGeneration != generation) return
                         super.onAdLoaded()
-                        sendStatistics(input = statistics)
                         callback?.onAdLoaded()
+                    }
+
+                    override fun onAdImpression() {
+                        if (requestGeneration == generation) sendStatistics(statistics)
                     }
 
                     override fun onAdClicked() {
                         if (requestGeneration != generation) return
                         super.onAdClicked()
-                        submitClick(adUnitId = statistics.adUnitId)
+                        submitClick(statistics)
                         callback?.onAdClicked()
                     }
 
@@ -168,14 +172,18 @@ class AdmobProvider : AdProvider {
                     mInterstitialAd = interstitialAd
                     mInterstitialAd?.fullScreenContentCallback =
                         object : FullScreenContentCallback() {
+                            override fun onAdImpression() {
+                                if (requestGeneration == generation) sendStatistics(statistics)
+                            }
+
                             override fun onAdClicked() {
                                 if (requestGeneration != generation) return
                                 super.onAdClicked()
                                 callback?.onAdClicked()
-                                submitClick(adUnitId = statistics.adUnitId)
+                                submitClick(statistics)
                             }
 
-                            override fun onAdFailedToShowFullScreenContent(error: com.google.android.gms.ads.AdError) {
+                            override fun onAdFailedToShowFullScreenContent(error: AdError) {
                                 if (requestGeneration != generation) return
                                 mInterstitialAd = null
                                 handleAdError(error.toString(), callback, statistics)
@@ -187,7 +195,6 @@ class AdmobProvider : AdProvider {
                                 mInterstitialAd = null
                             }
                         }
-                    sendStatistics(statistics)
                     callback?.onAdLoaded()
                     if (requestGeneration == generation) mInterstitialAd?.show(appCompatActivity)
                 }
@@ -240,17 +247,20 @@ class AdmobProvider : AdProvider {
                 handleAdError(error = p0.toString(), callback, statistics)
             }
 
+            override fun onAdImpression() {
+                if (requestGeneration == generation) sendStatistics(statistics)
+            }
+
             override fun onAdClicked() {
                 if (requestGeneration != generation) return
                 super.onAdClicked()
                 callback?.onAdClicked()
-                submitClick(adUnitId = statistics.adUnitId)
+                submitClick(statistics)
             }
 
             override fun onAdLoaded() {
                 if (requestGeneration != generation) return
                 super.onAdLoaded()
-                sendStatistics(statistics)
                 callback?.onAdLoaded()
             }
         }).build()
@@ -258,7 +268,7 @@ class AdmobProvider : AdProvider {
         adLoader.loadAd(AdRequest.Builder().build())
     }
 
-    private fun findNativeAdView(parent: ViewGroup): NativeAdView? {
+    internal fun findNativeAdView(parent: ViewGroup): NativeAdView? {
         if (parent is NativeAdView) return parent
         for (index in 0 until parent.childCount) {
             val child = parent.getChildAt(index)
@@ -267,7 +277,7 @@ class AdmobProvider : AdProvider {
         return null
     }
 
-    private fun populateCustomNativeAdView(nativeAd: NativeAd, viewGroup: ViewGroup) {
+    internal fun populateCustomNativeAdView(nativeAd: NativeAd, viewGroup: ViewGroup) {
         val nativeAdView = requireNotNull(findNativeAdView(viewGroup))
 
         val title = nativeAd.headline
@@ -349,7 +359,7 @@ class AdmobProvider : AdProvider {
 
     }
 
-    private fun populateDefaultNativeAdView(
+    internal fun populateDefaultNativeAdView(
         nativeAd: NativeAd,
         binding: AdmobNativeLayoutBinding,
         nativeAdAttributes: NativeAdAttributes

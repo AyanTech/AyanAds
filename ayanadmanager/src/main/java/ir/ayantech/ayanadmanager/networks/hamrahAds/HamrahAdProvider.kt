@@ -2,6 +2,7 @@ package ir.ayantech.ayanadmanager.networks.hamrahAds
 
 import android.app.Activity
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import ir.ayantech.ayanadmanager.R
@@ -18,21 +19,26 @@ import ir.ayantech.ayanadmanager.networks.hamrahAds.components.init
 import ir.ayantech.ayanadmanager.utils.ContainerType
 import ir.ayantech.ayanadmanager.utils.trying
 import ir.ayantech.hamrahads.HamrahAds
+import ir.ayantech.hamrahads.ads.LoadedAd
 import ir.ayantech.hamrahads.ads.banner.BannerAdLoader
 import ir.ayantech.hamrahads.ads.banner.BannerAdView
 import ir.ayantech.hamrahads.ads.interstitial.InterstitialAdLoader
 import ir.ayantech.hamrahads.ads.interstitial.InterstitialAdView
 import ir.ayantech.hamrahads.ads.native.NativeAdLoader
 import ir.ayantech.hamrahads.ads.native.NativeAdView
-import ir.ayantech.hamrahads.listener.AdLoadListener
+import ir.ayantech.hamrahads.domain.model.BannerAd
+import ir.ayantech.hamrahads.domain.model.InterstitialAd
+import ir.ayantech.hamrahads.domain.model.NativeAd
 import ir.ayantech.hamrahads.listener.AdDisplayListener
+import ir.ayantech.hamrahads.listener.AdLoadListener
 import ir.ayantech.hamrahads.model.enums.BannerSize
 import ir.ayantech.hamrahads.model.error.HamrahAdsError
+import java.util.IdentityHashMap
 
 class HamrahAdProvider : AdProvider {
 
     private var generation = 0
-    private val originalViewIds = java.util.IdentityHashMap<android.view.View, Int>()
+    private val originalViewIds = IdentityHashMap<View, Int>()
 
     private var showBannerAds: BannerAdView? = null
     private var requestBanner: BannerAdLoader? = null
@@ -117,7 +123,7 @@ class HamrahAdProvider : AdProvider {
                 .setContext(appCompatActivity)
                 .initId(statistics.adUnitId.orEmpty())
                 .initListener(object : AdLoadListener {
-                    override fun onSuccess() {
+                    override fun onBannerAdLoaded(ad: LoadedAd<BannerAd>) {
                         if (requestGeneration != generation) return
                         showBannerAds =
                             createShowBannerAds(
@@ -125,7 +131,7 @@ class HamrahAdProvider : AdProvider {
                                 viewGroup,
                                 adSize,
                                 statistics,
-                                callback
+                                callback, ad
                             )
                     }
 
@@ -152,10 +158,10 @@ class HamrahAdProvider : AdProvider {
             .setContext(appCompatActivity)
             .initId(statistics.adUnitId ?: "")
             .initListener(requestListener = object : AdLoadListener {
-                override fun onSuccess() {
+                override fun onInterstitialAdLoaded(ad: LoadedAd<InterstitialAd>) {
                     if (requestGeneration != generation) return
                     showInterstitialAds =
-                        createShowInterstitialAd(appCompatActivity, callback, statistics)
+                        createShowInterstitialAd(appCompatActivity, callback, statistics, ad)
                 }
 
                 override fun onError(error: HamrahAdsError) {
@@ -188,10 +194,10 @@ class HamrahAdProvider : AdProvider {
                 .setContext(appCompatActivity)
                 .initId(statistics.adUnitId ?: "")
                 .initListener(requestListener = object : AdLoadListener {
-                    override fun onSuccess() {
+                    override fun onNativeAdLoaded(ad: LoadedAd<NativeAd>) {
                         if (requestGeneration != generation) return
                         showNativeAds =
-                            createShowNativeAd(appCompatActivity, callback, viewGroup, statistics)
+                            createShowNativeAd(appCompatActivity, callback, viewGroup, statistics, ad)
                     }
 
                     override fun onError(error: HamrahAdsError) {
@@ -223,9 +229,11 @@ class HamrahAdProvider : AdProvider {
         appCompatActivity: AppCompatActivity,
         callback: AdCallback?,
         viewGroup: ViewGroup,
-        statistics: AddStatisticsInputParameters
+        statistics: AddStatisticsInputParameters,
+        ad: LoadedAd<NativeAd>,
     ): NativeAdView? {
         return HamrahAds.ShowNativeAds()
+            .setAd(ad)
             .setViewGroup(viewGroup)
             .initId(statistics.adUnitId ?: "")
             .setContext(appCompatActivity)
@@ -237,10 +245,12 @@ class HamrahAdProvider : AdProvider {
         viewGroup: ViewGroup,
         adSize: BannerSize?,
         statistics: AddStatisticsInputParameters,
-        callback: AdCallback?
+        callback: AdCallback?,
+        ad: LoadedAd<BannerAd>,
     ): BannerAdView? {
         val requestGeneration = generation
         return HamrahAds.ShowBannerAds()
+            .setAd(ad)
             .setContext(appCompatActivity)
             .setViewGroup(viewGroup)
             .initId(statistics.adUnitId ?: "")
@@ -262,7 +272,7 @@ class HamrahAdProvider : AdProvider {
                 override fun onClick() {
                     if (requestGeneration != generation) return
                     super.onClick()
-                    submitClick(adUnitId = statistics.adUnitId)
+                    submitClick(statistics)
                     callback?.onAdClicked()
                 }
 
@@ -276,9 +286,11 @@ class HamrahAdProvider : AdProvider {
     private fun createShowInterstitialAd(
         activity: Activity,
         callback: AdCallback?,
-        statistics: AddStatisticsInputParameters
+        statistics: AddStatisticsInputParameters,
+        ad: LoadedAd<InterstitialAd>,
     ): InterstitialAdView? {
         return HamrahAds.ShowInterstitialAds()
+            .setAd(ad)
             .setContext(activity as AppCompatActivity)
             .initId(statistics.adUnitId.orEmpty())
             .initListener(
@@ -324,7 +336,7 @@ class HamrahAdProvider : AdProvider {
                 if (requestGeneration != generation) return
                 super.onClick()
                 callback?.onAdClicked()
-                submitClick(adUnitId = statistics.adUnitId)
+                submitClick(statistics)
             }
 
         }

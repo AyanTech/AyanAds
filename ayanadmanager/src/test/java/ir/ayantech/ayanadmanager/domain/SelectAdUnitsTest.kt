@@ -3,13 +3,14 @@ package ir.ayantech.ayanadmanager.domain
 import ir.ayantech.ayanadmanager.domain.model.AdConfiguration
 import ir.ayantech.ayanadmanager.domain.model.AdUnit
 import ir.ayantech.ayanadmanager.domain.model.ProviderPriority
+import ir.ayantech.ayanadmanager.domain.usecase.SelectAdUnits
 import ir.ayantech.ayanadmanager.domain.usecase.SelectAdUnitsImpl
 import ir.ayantech.ayanadmanager.utils.ContainerType
 import ir.ayantech.ayanadmanager.utils.constant.AdSource
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import kotlinx.coroutines.test.runTest
 
 class SelectAdUnitsTest {
     @Test
@@ -40,7 +41,7 @@ class SelectAdUnitsTest {
             ProviderPriority(AdSource.HamrahAd, null, 50),
             ProviderPriority(AdSource.AdMob, null, 50),
         ), listOf(other, first, second))
-        val useCase: ir.ayantech.ayanadmanager.domain.usecase.SelectAdUnits = SelectAdUnitsImpl()
+        val useCase: SelectAdUnits = SelectAdUnitsImpl()
         assertEquals(listOf(first, second, other), useCase(config)["banner"])
         assertEquals(listOf(other, first, second), config.adUnits)
     }

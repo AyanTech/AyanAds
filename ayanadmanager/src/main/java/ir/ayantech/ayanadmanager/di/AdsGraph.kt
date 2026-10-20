@@ -16,11 +16,10 @@ import ir.ayantech.networking.ayanModel.LogLevel
 import ir.ayantech.networking.datasource.impl.AdsRemoteDataSourceImpl
 import ir.ayantech.networking.repository.impl.AdsRepositoryImpl
 import ir.ayantech.networking.v2.AyanApi
-import kotlin.time.Duration.Companion.seconds
 
 internal fun createAdsSession(context: Context, appKey: String): AdsSession {
     val api = AyanApi.Builder(context.applicationContext, Config.AYAN_AD_BASE_URL)
-        .setTimeOutDuration(Config.TIMEOUT.seconds)
+        .setTimeOutDuration(Config.TIMEOUT)
         // Avoid logging app keys and tracking payloads in the SDK.
         .setLogLevel(LogLevel.LOG_ALL)
         .build()

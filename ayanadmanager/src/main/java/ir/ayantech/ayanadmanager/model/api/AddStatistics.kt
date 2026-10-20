@@ -1,8 +1,10 @@
 package ir.ayantech.ayanadmanager.model.api
 
 import ir.ayantech.ayanadmanager.BuildConfig
+import java.util.UUID
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 data class AddStatisticsOutPutParameters(@SerialName("ClickTracker") val clickTracker: String?)
@@ -18,4 +20,5 @@ data class AddStatisticsInputParameters(
     @SerialName("SdkVersion") val sdkVersion: String = BuildConfig.SDK_VERSION,
     @SerialName("OsName") val osName: String,
     @SerialName("OsVersion") val osVersion: Int,
+    @Transient val trackingId: String = UUID.randomUUID().toString(),
 )

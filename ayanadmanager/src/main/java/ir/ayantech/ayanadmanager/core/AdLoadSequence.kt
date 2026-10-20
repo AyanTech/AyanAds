@@ -9,6 +9,7 @@ internal class AdLoadSequence(
     private val onProviderChanged: (AdProvider?) -> Unit = {},
     private val onFinished: () -> Unit = {},
     private val onAttemptFailed: (Int, String) -> Unit = { _, _ -> },
+    private val scheduleTimeout: ((() -> Unit) -> (() -> Unit))? = null,
 ) {
     private var index = -1
     private var provider: AdProvider? = null
@@ -16,6 +17,7 @@ internal class AdLoadSequence(
     private var advancing = false
     private var advanceRequested = false
     private var lastError = "No available ad providers."
+    private var cancelTimeout: (() -> Unit)? = null
 
     fun start() {
         if (index >= 0 || closed) return
@@ -38,9 +40,15 @@ internal class AdLoadSequence(
                     return
                 }
                 var failed = false
+                var loaded = false
                 val events = object : AdCallback {
                     override fun onAdLoaded() {
-                        if (!closed && !failed && index == attempt) callback?.onAdLoaded()
+                        if (!closed && !failed && index == attempt) {
+                            loaded = true
+                            cancelTimeout?.invoke()
+                            cancelTimeout = null
+                            callback?.onAdLoaded()
+                        }
                     }
                     override fun onAdClicked() {
                         if (!closed && !failed && index == attempt) callback?.onAdClicked()
@@ -53,10 +61,17 @@ internal class AdLoadSequence(
                         advance()
                     }
                 }
-                val next = createProvider(attempt)
-                provider = next
-                onProviderChanged(next)
-                load(next, attempt, events)
+                cancelTimeout = scheduleTimeout?.invoke {
+                    if (!loaded) events.onAdFailed("Ad provider timed out.")
+                }
+                try {
+                    val next = createProvider(attempt)
+                    provider = next
+                    onProviderChanged(next)
+                    load(next, attempt, events)
+                } catch (error: Exception) {
+                    events.onAdFailed(error.message ?: "Ad provider failed.")
+                }
             }
         } finally {
             advancing = false
@@ -71,10 +86,16 @@ internal class AdLoadSequence(
     }
 
     private fun releaseProvider() {
+        cancelTimeout?.invoke()
+        cancelTimeout = null
         val previous = provider ?: return
         provider = null
         // Clear the current attempt before disposal in case the SDK emits a callback from destroy().
         onProviderChanged(null)
-        previous.destroy()
+        try {
+            previous.destroy()
+        } catch (error: Exception) {
+            onAttemptFailed(index, error.message ?: "Unable to release ad provider.")
+        }
     }
 }

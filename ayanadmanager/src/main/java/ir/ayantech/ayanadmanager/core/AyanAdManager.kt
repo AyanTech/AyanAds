@@ -1,16 +1,18 @@
 package ir.ayantech.ayanadmanager.core
 
-import android.view.ViewGroup
 import android.os.Handler
 import android.os.Looper
-import kotlinx.coroutines.withTimeout
-import ir.ayantech.ayanadmanager.utils.constant.Config
+import android.view.ViewGroup
+import androidx.annotation.MainThread
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.ads.MobileAds
 import ir.ayantech.ayanadmanager.BuildConfig
 import ir.ayantech.ayanadmanager.di.createAdsSession
 import ir.ayantech.ayanadmanager.domain.model.AdConfiguration
+import ir.ayantech.ayanadmanager.domain.model.AdUnit
 import ir.ayantech.ayanadmanager.domain.usecase.SelectAdUnits
 import ir.ayantech.ayanadmanager.domain.usecase.SelectAdUnitsImpl
 import ir.ayantech.ayanadmanager.networks.admob.ConsentManager
@@ -22,18 +24,23 @@ import ir.ayantech.ayanadmanager.utils.SimpleCallBack
 import ir.ayantech.ayanadmanager.utils.StringCallBack
 import ir.ayantech.ayanadmanager.utils.constant.AdSource
 import ir.ayantech.ayanadmanager.utils.constant.AppMarket
+import ir.ayantech.ayanadmanager.utils.constant.Config
 import ir.ayantech.hamrahads.HamrahAds
 import ir.ayantech.hamrahads.listener.InitializationListener
 import ir.ayantech.hamrahads.model.error.HamrahAdsError
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 
 object AyanAdManager {
     private val mainHandler by lazy { Handler(Looper.getMainLooper()) }
@@ -42,10 +49,11 @@ object AyanAdManager {
     private var initializationJob: Job? = null
     var adProvider: AdProvider? = null
     private val adManager = AdProviderManager()
+    private val screenSessions = mutableSetOf<ScreenAdSession>()
     internal var session: AdsSession? = null
         private set
     private var configuration: AdConfiguration? = null
-    private var adUnitsByContainer = emptyMap<String, List<ir.ayantech.ayanadmanager.domain.model.AdUnit>>()
+    private var adUnitsByContainer = emptyMap<String, List<AdUnit>>()
     var appKey = ""
         private set
     lateinit var appMarket: AppMarket
@@ -96,14 +104,14 @@ object AyanAdManager {
                 val config = currentSession.load(appKey)
                 val available = config.providers.distinctBy { it.adSource }.filter { provider ->
                     try {
-                        withTimeout(Config.TIMEOUT * 1_000L) {
+                        withTimeout(Config.TIMEOUT) {
                             when (provider.adSource) {
                                 AdSource.HamrahAd -> initializeHamrahAds(appCompatActivity, provider.appId.orEmpty())
                                 AdSource.AdMob -> initializeMobileAds(appCompatActivity)
                             }
                         }
                         true
-                    } catch (timeout: kotlinx.coroutines.TimeoutCancellationException) {
+                    } catch (timeout: TimeoutCancellationException) {
                         Logger.w("${provider.adSource} initialization timed out.")
                         false
                     } catch (cancelled: CancellationException) {
@@ -188,6 +196,8 @@ object AyanAdManager {
         session?.close()
         session = null
         adManager.destroyAll()
+        screenSessions.toList().forEach { it.close() }
+        screenSessions.clear()
         adProvider = null
         configuration = null
         adUnitsByContainer = emptyMap()
@@ -213,14 +223,31 @@ object AyanAdManager {
             }
             return
         }
+        bindAd(containerKey, appCompatActivity, appCompatActivity, adSize, adContainerId,
+            nativeAdAttributes, useDefaultNativeAdView, adCallback)
+    }
+
+    /** Owns one placement; use viewLifecycleOwner for fragments and dispose on recycling. */
+    @MainThread
+    fun bindAd(
+        containerKey: String,
+        appCompatActivity: AppCompatActivity,
+        lifecycleOwner: LifecycleOwner,
+        adSize: AdSizeType? = null,
+        adContainerId: ViewGroup? = null,
+        nativeAdAttributes: NativeAdAttributes = NativeAdAttributes(),
+        useDefaultNativeAdView: Boolean = true,
+        adCallback: AdCallback? = null,
+    ): AdHandle {
+        check(Looper.myLooper() == Looper.getMainLooper()) { "bindAd must run on the main thread." }
         val config = configuration
         if (!initialized || config == null) {
             adCallback?.onAdFailed("SDK is not initialized.")
-            return
+            return DisposableAdHandle()
         }
         adUnitsByContainer[containerKey]?.takeIf { it.isNotEmpty() }
             ?.let { filteredAdUnits ->
-                adManager.loadAndShowAd(
+                return adManager.bindAd(
                     containerKey = containerKey,
                     adUnits = filteredAdUnits,
                     callback = createAdCallBack(adCallback),
@@ -228,14 +255,55 @@ object AyanAdManager {
                     viewGroup = adContainerId,
                     nativeAdAttributes = nativeAdAttributes,
                     useDefaultNativeAdView = useDefaultNativeAdView,
-                    adSize = adSize
+                    adSize = adSize,
+                    lifecycleOwner = lifecycleOwner,
                 )
             } ?: run {
             val message = "No ad found for containerKey: $containerKey"
             Logger.w(message)
             adCallback?.onAdFailed(error = message)
         }
+        return DisposableAdHandle()
+    }
 
+    internal fun unitsFor(containerKey: String) = if (initialized) adUnitsByContainer[containerKey].orEmpty() else emptyList()
+
+    /** A bounded native/banner working set, owned by the fragment's view lifecycle. */
+    @MainThread
+    fun createScreenSession(
+        activity: AppCompatActivity,
+        lifecycleOwner: LifecycleOwner,
+        maxSlots: Int = 4,
+        maxConcurrentLoads: Int = 2,
+        attemptTimeout: Duration = 15.seconds,
+    ): ScreenAdSession {
+        check(Looper.myLooper() == Looper.getMainLooper())
+        require(attemptTimeout > Duration.ZERO)
+        val session = ScreenAdSession(activity, lifecycleOwner, maxSlots, maxConcurrentLoads,
+            onClosed = { screenSessions.remove(it) }) { slot ->
+            val units = unitsFor(slot.containerKey)
+            check(units.isNotEmpty()) { "Initialize the SDK before preparing a configured placement." }
+            var lastError = "No available provider."
+            var prepared: PreparedInlineAd? = null
+            for (unit in units) {
+                try {
+                    prepared = withTimeoutOrNull(attemptTimeout) {
+                        prepareInlineAd(activity, lifecycleOwner, slot, unit)
+                    }
+                    if (prepared != null) break
+                    lastError = "${unit.adSource} preparation timed out."
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (error: Exception) {
+                    lastError = error.message ?: "Ad preparation failed."
+                }
+            }
+            prepared ?: error(lastError)
+        }
+        if (lifecycleOwner.lifecycle.currentState != Lifecycle.State.DESTROYED && !activity.isDestroyed) {
+            screenSessions += session
+        }
+        return session
     }
 
     private fun createAdCallBack(adCallback: AdCallback?) = object : AdCallback {

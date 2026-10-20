@@ -17,6 +17,9 @@
             android:value="ca-app-pub-2650198364422513~2780435417"/>
 
         <activity
+            android:name="ir.ayantech.ayanadmanager.FeedDemoActivity"
+            android:exported="false" />
+        <activity
             android:name="ir.ayantech.ayanadmanager.MainActivity"
             android:exported="true">
             <intent-filter>

@@ -5,6 +5,26 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class AdLoadSequenceTest {
+    @Test fun `timeout advances fallback while late callbacks and cancelled timers are ignored`() {
+        val timers = mutableListOf<() -> Unit>()
+        val callbacks = mutableListOf<AdCallback>()
+        var cancelledTimers = 0
+        var loaded = 0
+        val providers = List(2) { Provider() }
+        val sequence = AdLoadSequence(2, { providers[it] }, { _, _, callback -> callbacks += callback },
+            object : AdCallback { override fun onAdLoaded() { loaded++ } },
+            scheduleTimeout = { action -> timers += action; { cancelledTimers++ } })
+        sequence.start()
+        timers.first().invoke()
+        assertEquals(1, providers[0].destroyed)
+        callbacks.first().onAdLoaded()
+        callbacks.last().onAdLoaded()
+        assertEquals(1, loaded)
+        assertEquals(2, cancelledTimers)
+        sequence.cancel()
+        callbacks.last().onAdLoaded()
+        assertEquals(1, loaded)
+    }
     @Test fun `each provider failure is reported once before fallback and final error is preserved`() {
         val events = mutableListOf<AdCallback>()
         val failures = mutableListOf<Pair<Int, String>>()

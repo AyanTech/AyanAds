@@ -10,10 +10,14 @@ fun sendStatistics(input: AddStatisticsInputParameters) {
         AdStatistics(
             input.containerKey, input.adUnitId, input.adSource, input.appMarket,
             input.appVersion, input.failureCause, input.sdkVersion, input.osName, input.osVersion,
-        )
+        ), input.trackingId
     )
 }
 
 fun submitClick(adUnitId: String?) {
     AyanAdManager.session?.click(adUnitId)
+}
+
+fun submitClick(input: AddStatisticsInputParameters) {
+    AyanAdManager.session?.click(input.trackingId)
 }

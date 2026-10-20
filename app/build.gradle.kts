@@ -43,6 +43,7 @@ kotlin {
 }
 
 dependencies {
+    implementation("androidx.recyclerview:recyclerview:1.3.1")
     // The sample layout directly embeds NativeAdView and MediaView.
     implementation(libs.play.services.ads)
     implementation(libs.user.messaging.platform)

@@ -1,5 +1,7 @@
 package ir.ayantech.ayanadmanager.core
 
+import android.os.Handler
+import android.os.Looper
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -17,6 +19,7 @@ import ir.ayantech.ayanadmanager.utils.constant.AdSource
 import ir.ayantech.ayanadmanager.utils.constant.Config.PLATFORM
 import ir.ayantech.ayanadmanager.utils.getAppVersion
 import ir.ayantech.ayanadmanager.utils.getOsVersion
+import kotlin.time.Duration.Companion.seconds
 
 /** Owns one request per placement, including fallback providers and lifecycle cleanup. */
 class AdProviderManager {
@@ -34,20 +37,36 @@ class AdProviderManager {
         useDefaultNativeAdView: Boolean = true,
         adSize: AdSizeType? = null,
     ) {
-        if (appCompatActivity.lifecycle.currentState == Lifecycle.State.DESTROYED || appCompatActivity.isFinishing) {
+        bindAd(containerKey, adUnits, callback, appCompatActivity, viewGroup, nativeAdAttributes, useDefaultNativeAdView, adSize, appCompatActivity)
+    }
+
+    internal fun bindAd(
+        containerKey: String,
+        adUnits: List<AdUnit>,
+        callback: AdCallback?,
+        appCompatActivity: AppCompatActivity,
+        viewGroup: ViewGroup?,
+        nativeAdAttributes: NativeAdAttributes,
+        useDefaultNativeAdView: Boolean,
+        adSize: AdSizeType?,
+        lifecycleOwner: LifecycleOwner,
+    ): AdHandle {
+        val handle = DisposableAdHandle()
+        if (lifecycleOwner.lifecycle.currentState == Lifecycle.State.DESTROYED ||
+            appCompatActivity.lifecycle.currentState == Lifecycle.State.DESTROYED || appCompatActivity.isFinishing) {
             callback?.onAdFailed("The ad Activity is no longer active.")
-            return
+            return handle
         }
         if (adUnits.isEmpty()) {
             callback?.onAdFailed("No ad found for containerKey: $containerKey")
-            return
+            return handle
         }
         val placement = Placement(appCompatActivity, viewGroup ?: containerKey)
         requests.remove(placement)?.cancel()
         val version = appVersion ?: getAppVersion(appCompatActivity.applicationContext).also { appVersion = it }
         lateinit var sequence: AdLoadSequence
         val observer = object : DefaultLifecycleObserver {
-            override fun onDestroy(owner: LifecycleOwner) { sequence.cancel() }
+            override fun onDestroy(owner: LifecycleOwner) { handle.dispose() }
         }
         var currentProvider: AdProvider? = null
         sequence = AdLoadSequence(
@@ -101,11 +120,23 @@ class AdProviderManager {
             onFinished = {
                 if (requests[placement] === sequence) requests.remove(placement)
                 appCompatActivity.lifecycle.removeObserver(observer)
+                lifecycleOwner.lifecycle.removeObserver(observer)
+                handle.action = null
+            },
+            scheduleTimeout = { timeout ->
+                val handler = Handler(Looper.getMainLooper())
+                val task = Runnable(timeout)
+                handler.postDelayed(task, 15.seconds.inWholeMilliseconds)
+                val cancel: () -> Unit = { handler.removeCallbacks(task) }
+                cancel
             },
         )
         requests[placement] = sequence
+        handle.action = sequence::cancel
         appCompatActivity.lifecycle.addObserver(observer)
+        lifecycleOwner.lifecycle.addObserver(observer)
         sequence.start()
+        return handle
     }
 
     fun destroyAll() {

@@ -1,23 +1,24 @@
 package ir.ayantech.ayanadmanager
 
-import ir.ayantech.ayanadmanager.sample.R
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.widget.Button
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import ir.ayantech.ayanadmanager.ui.AdsDemoViewModel
-import kotlinx.coroutines.launch
-import android.util.Log
-import android.widget.Button
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.res.ResourcesCompat
 import ir.ayantech.ayanadmanager.core.AdCallback
 import ir.ayantech.ayanadmanager.core.AyanAdManager
 import ir.ayantech.ayanadmanager.networks.hamrahAds.components.NativeAdAttributes
+import ir.ayantech.ayanadmanager.sample.R
+import ir.ayantech.ayanadmanager.ui.AdsDemoViewModel
 import ir.ayantech.ayanadmanager.utils.constant.AppMarket
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private val viewModel by lazy { ViewModelProvider(this)[AdsDemoViewModel::class.java] }
@@ -39,11 +40,16 @@ class MainActivity : AppCompatActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.state.collect { state ->
                     findViewById<TextView>(R.id.status).text = state.message
-                    listOf(R.id.ad1, R.id.ad2, R.id.ad3).forEach { id ->
+                    listOf(R.id.ad1, R.id.ad2, R.id.ad3, R.id.feedDemo).forEach { id ->
                         findViewById<Button>(id).isEnabled = state.ready
                     }
                 }
             }
+        }
+        findViewById<Button>(R.id.feedDemo).setOnClickListener {
+            startActivity(Intent(this, FeedDemoActivity::class.java).putExtra(
+                "containerKey", hamrahAdNativeContainerKey,
+            ))
         }
         AyanAdManager.initialize(
             appCompatActivity = this,

@@ -8,10 +8,9 @@ import ir.ayantech.ayanadmanager.domain.usecase.TrackAdClick
 import ir.ayantech.ayanadmanager.utils.Logger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.job
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,8 +34,8 @@ internal class AdsSession(
 ) {
     private val mutableState = MutableStateFlow<AdsUiState>(AdsUiState.Idle)
     val state = mutableState.asStateFlow()
-    private val clickTrackers = mutableMapOf<String, String>()
-    private val pendingStatistics = mutableMapOf<String, Job>()
+    private class TrackingEntry(var tracker: String? = null, var pending: Job? = null)
+    private val tracking = LinkedHashMap<String, TrackingEntry>()
     @Volatile private var closed = false
 
     suspend fun load(appKey: String): AdConfiguration {
@@ -52,35 +51,36 @@ internal class AdsSession(
         }
     }
 
-    fun record(statistics: AdStatistics) {
+    fun record(statistics: AdStatistics, trackingId: String? = statistics.adUnitId) {
         if (closed) return
-        scope.launch {
-            val adUnitId = statistics.adUnitId?.takeIf(String::isNotBlank)
-            val request = currentCoroutineContext().job
-            if (adUnitId != null) pendingStatistics[adUnitId] = request
+        val key = trackingId?.takeIf(String::isNotBlank)
+        val entry = TrackingEntry(key?.let { tracking[it]?.tracker })
+        if (key != null) {
+            tracking.remove(key)
+            tracking[key] = entry
+            while (tracking.size > 256) tracking.remove(tracking.keys.first())
+        }
+        val pending = scope.launch(start = CoroutineStart.LAZY) {
             try {
-                val tracker = recordStatistics(statistics)?.takeIf(String::isNotBlank)
-                // A slow older impression must not overwrite the tracker for a newer one.
-                if (tracker != null && adUnitId != null && pendingStatistics[adUnitId] === request) {
-                    clickTrackers[adUnitId] = tracker
-                }
+                recordStatistics(statistics)?.takeIf(String::isNotBlank)?.let { entry.tracker = it }
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Exception) {
                 Logger.e("sendStatistics failure: ${error.message}")
-            } finally {
-                if (adUnitId != null && pendingStatistics[adUnitId] === request) {
-                    pendingStatistics.remove(adUnitId)
-                }
             }
         }
+        entry.pending = pending
+        pending.start()
     }
 
-    fun click(adUnitId: String?) {
-        if (closed || adUnitId.isNullOrBlank()) return
+    fun click(trackingId: String?) {
+        if (closed || trackingId.isNullOrBlank()) return
+        // Snapshot the display identity before suspension. Eviction/disposal must not redirect
+        // an already observed click to the tracker of a newer ad using the same unit.
+        val entry = tracking[trackingId] ?: return
         scope.launch {
-            pendingStatistics[adUnitId]?.join()
-            val tracker = clickTrackers[adUnitId] ?: return@launch
+            entry.pending?.join()
+            val tracker = entry.tracker ?: return@launch
             try {
                 trackClick(tracker)
             } catch (cancelled: CancellationException) {
@@ -91,12 +91,13 @@ internal class AdsSession(
         }
     }
 
+    fun release(trackingId: String) { tracking.remove(trackingId) }
+
     fun close() {
         if (closed) return
         closed = true
         scope.cancel()
-        pendingStatistics.clear()
-        clickTrackers.clear()
+        tracking.clear()
         closeClient()
     }
 }

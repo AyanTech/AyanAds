@@ -6,6 +6,7 @@ import ir.ayantech.ayanadmanager.domain.model.AdsException
 import ir.ayantech.ayanadmanager.domain.usecase.LoadAdConfiguration
 import ir.ayantech.ayanadmanager.domain.usecase.RecordAdStatistics
 import ir.ayantech.ayanadmanager.domain.usecase.TrackAdClick
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -15,6 +16,29 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AdsSessionTest {
+    @Test fun `same-unit displays keep their own trackers even if one is released during click`() = runTest {
+        val first = CompletableDeferred<String?>()
+        val second = CompletableDeferred<String?>()
+        var requests = 0
+        val clicks = mutableListOf<String>()
+        val session = AdsSession(
+            LoadAdConfiguration { AdConfiguration("demo", emptyList(), emptyList()) },
+            RecordAdStatistics { if (requests++ == 0) first.await() else second.await() },
+            TrackAdClick { clicks += it }, scope = backgroundScope,
+        )
+        val statistics = AdStatistics("container", "shared-unit", "HamrahAd", "market", 1, null, "sdk", "android", 37)
+        session.record(statistics, "display-A")
+        session.record(statistics, "display-B")
+        runCurrent()
+        session.click("display-A")
+        session.release("display-A")
+        second.complete("tracker-B")
+        first.complete("tracker-A")
+        runCurrent()
+        session.click("display-B")
+        runCurrent()
+        assertEquals(listOf("tracker-A", "tracker-B"), clicks)
+    }
     @Test
     fun `configuration updates state and failures allow retry`() = runTest {
         var shouldFail = true
@@ -59,8 +83,8 @@ class AdsSessionTest {
 
     @Test
     fun `click waits for pending tracker and an older response cannot overwrite the latest`() = runTest {
-        val first = kotlinx.coroutines.CompletableDeferred<String?>()
-        val second = kotlinx.coroutines.CompletableDeferred<String?>()
+        val first = CompletableDeferred<String?>()
+        val second = CompletableDeferred<String?>()
         var requests = 0
         val clicks = mutableListOf<String>()
         val session = AdsSession(
